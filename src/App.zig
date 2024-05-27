@@ -2,7 +2,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 const Canvas = @import("canvas/Canvas.zig");
-const WindowManager = @import("gui/WindowManager.zig");
+const Gui = @import("gui/Gui.zig");
 
 pub const AppRefs = struct {
     alloc: Allocator,

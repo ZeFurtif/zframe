@@ -30,13 +30,14 @@ pub fn init(alloc: Allocator) !Gui {
         .current_user_action = UserAction.none,
         .history = std.ArrayList(UserAction).init(alloc),
         .window_manager = try WindowManager.init(alloc),
-    }
+    };
 }
 
 pub fn deinit(self: *Gui) void {
-    self.current_user_action.deinit();
+    self.history.deinit();
+    self.window_manager.deinit();
 }
 
 pub fn get_action(self: *Gui) UserAction {
-    return this.current_user_action;
+    return self.current_user_action;
 }
