@@ -1,0 +1,89 @@
+const std = @import("std");
+const math = std.math;
+const Allocator = std.mem.Allocator;
+
+const raylib = @cImport({
+    @cInclude("raylib.h");
+});
+
+const App = @import("App.zig");
+const UserAction = @import("Gui.zig").UserAction;
+
+pub const WindowState = struct {
+    is_moving: bool = false,
+    is_scaling: bool = false,
+    is_pinned: bool = false,
+};
+
+const Window = @This();
+title: [20]u8,
+x: i32,
+y: i32,
+width: i32,
+height: i32,
+window_state: WindowState,
+mouse_offset_x: i32,
+mouse_offset_y: i32,
+
+pub fn init(title: []const u8, x: i32, y: i32, width: i32, height: i32) !Window {
+    return .{
+        .title = title,
+        .x = x,
+        .y = y,
+        .width = width,
+        .height = height,
+        .window_state = WindowState{},
+        .mouse_offset_x = 0,
+        .mouse_offset_y = 0,
+    };
+}
+
+pub fn is_mouse_inside(self: *Window) bool {
+    const mouse_x = raylib.GetMouseX();
+    const mouse_y = raylib.GetMouseY();
+    return mouse_x >= self.x and mouse_x <= self.x + self.width and mouse_y >= self.y and mouse_y <= self.y + self.height;
+}
+
+pub fn is_mouse_on_resize_area(self: *Window) bool {
+    const mouse_x = raylib.GetMouseX();
+    const mouse_y = raylib.GetMouseY();
+    return mouse_x - self.x > self.width - 15 and mouse_y - self.y > self.height - 15;
+}
+
+pub fn interact(self: *Window, refs: App.AppRefs) void {
+    if (refs.gui.get_action() == UserAction.window_interact and self.is_mouse_on_resize_area()) {
+        self.window_state.is_scaling = true;
+    }
+    if (refs.gui.get_action() == UserAction.window_interact and self.is_mouse_inside()) {
+        self.window_state.is_moving = true;
+        self.mouse_offset_x = raylib.GetMouseX() - self.x;
+        self.mouse_offset_y = raylib.GetMouseY() - self.y;
+    } else {
+        raylib.SetMouseCursor(raylib.MOUSE_CURSOR_DEFAULT);
+        self.window_state.is_scaling = false;
+        self.window_state.is_moving = false;
+    }
+}
+
+pub fn update(self: *Window, refs: App.AppRefs) void {
+    self.interact(refs);
+    if (self.window_state.is_scaling) {
+        self.width = raylib.GetMouseX() - self.x;
+        self.height = raylib.GetMouseY() - self.y;
+        self.width = math.clamp(self.width, 100, raylib.GetScreenWidth() - self.x);
+        self.height = math.clamp(self.height, 100, raylib.GetScreenHeight() - self.y);
+    }
+    if (self.window_state.is_moving) {
+        self.x = raylib.GetMouseX() - self.mouse_offset_x;
+        self.y = raylib.GetMouseY() - self.mouse_offset_y;
+        self.x = math.clamp(self.x, 0, raylib.GetScreenWidth() - self.width);
+        self.y = math.clamp(self.y, 0, raylib.GetScreenHeight() - self.height);
+    }
+}
+
+pub fn render(self: *Window) void {
+    raylib.DrawRectangleLines(self.x - 1, self.y - 1, self.width + 2, self.height + 2, raylib.WHITE);
+    raylib.DrawRectangle(self.x, self.y, self.width + 3, self.height + 3, raylib.BLACK);
+    raylib.DrawRectangle(self.x, self.y, self.width, self.height, raylib.GRAY);
+    raylib.DrawText(&self.title, self.x + 10, self.y + 10, 10, raylib.WHITE);
+}

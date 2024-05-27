@@ -7,8 +7,8 @@ const raylib = @cImport({
 });
 
 const App = @import("App.zig");
-const Canvas = @import("canvas/Canvas.zig");
-const Gui = @import("gui/Gui.zig");
+const Canvas = @import("Canvas.zig");
+const Gui = @import("Gui.zig");
 
 pub fn main() !void {
     //MEMORY
@@ -23,28 +23,52 @@ pub fn main() !void {
     var canvas = try Canvas.init(alloc);
     defer canvas.deinit();
 
-    //var window_manager = try WindowManager.init(alloc);
-    //defer window_manager.deinit();
-
     var gui = try Gui.init(alloc);
     defer gui.deinit();
+
+    var camera: raylib.Camera2D = raylib.Camera2D{};
+    camera.target = raylib.Vector2{
+        .x = @floatFromInt(@divTrunc(canvas.width, 2)),
+        .y = @floatFromInt(@divTrunc(canvas.height, 2)),
+    };
+    camera.offset = raylib.Vector2{
+        .x = @floatFromInt(@divTrunc(raylib.GetScreenWidth(), 2)),
+        .y = @floatFromInt(@divTrunc(raylib.GetScreenHeight(), 2)),
+    };
+    camera.rotation = 0;
+    camera.zoom = 1;
 
     const app_refs: App.AppRefs = .{
         .alloc = alloc,
         .canvas = &canvas,
         .gui = &gui,
+        .camera = &camera,
     };
 
-    const main_loop_thread = try std.Thread.spawn(.{}, main_loop, .{app_refs});
-    main_loop_thread.join();
+    try main_loop(app_refs);
+    //const main_loop_thread = try std.Thread.spawn(.{}, main_loop, .{app_refs});
+    //main_loop_thread.join();
 }
 
 pub fn main_loop(refs: App.AppRefs) !void {
-    _ = refs;
     while (!raylib.WindowShouldClose()) {
         {
-            //refs.canvas.update();
-            //refs.window_manager.update();
+            refs.gui.update(refs);
+            refs.canvas.update(refs);
+        }
+        {
+            raylib.BeginDrawing();
+            raylib.ClearBackground(raylib.DARKGRAY);
+
+            raylib.BeginMode2D(refs.camera.*);
+            refs.canvas.render();
+            raylib.EndMode2D();
+
+            refs.gui.render();
+
+            raylib.DrawFPS(10, 10);
+            raylib.EndDrawing();
         }
     }
+    raylib.CloseWindow();
 }

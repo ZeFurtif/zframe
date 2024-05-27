@@ -1,0 +1,61 @@
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+
+const raylib = @cImport({
+    @cInclude("raylib.h");
+});
+
+const App = @import("App.zig");
+const Window = @import("Window.zig");
+const UserAction = @import("Gui.zig").UserAction;
+
+const WindowManager = @This();
+windows: std.ArrayList(Window),
+selected_window_id: usize,
+
+pub fn init(alloc: Allocator) !WindowManager {
+    return .{
+        .windows = std.ArrayList(Window).init(alloc),
+        .selected_window_id = 0,
+    };
+}
+
+pub fn deinit(self: *WindowManager) void {
+    self.windows.deinit();
+}
+
+pub fn bring_to_top(self: *WindowManager, id: usize) void {
+    if (self.windows.insert(0, self.windows.orderedRemove(id))) |stmt| {
+        return stmt;
+    } else |e| {
+        std.log.debug("ERROR {any}", .{e});
+        return;
+    }
+}
+
+pub fn update(self: *WindowManager, refs: App.AppRefs) void {
+    var i = self.windows.items.len;
+    while (i != 0) {
+        i -= 1;
+        if (refs.gui.get_action() == UserAction.window_kill) {
+            _ = self.windows.orderedRemove(i);
+            return;
+        }
+        if (self.windows.items[i].is_mouse_inside() or (self.windows.items[i].window_state.is_moving or self.windows.items[i].window_state.is_scaling)) {
+            if (self.selected_window_id != i and (self.windows.items[i].window_state.is_moving or self.windows.items[i].window_state.is_scaling)) {
+                self.selected_window_id = i;
+                self.bring_to_top(self.selected_window_id);
+            }
+            self.windows.items[i].update(refs);
+            return;
+        }
+    }
+}
+
+pub fn render(self: *WindowManager) void {
+    var i = self.windows.items.len;
+    while (i != 0) {
+        i -= 1;
+        self.windows.items[i].render();
+    }
+}

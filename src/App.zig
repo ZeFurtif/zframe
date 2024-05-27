@@ -1,13 +1,18 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-const Canvas = @import("canvas/Canvas.zig");
-const Gui = @import("gui/Gui.zig");
+const raylib = @cImport({
+    @cInclude("raylib.h");
+});
+
+const Canvas = @import("Canvas.zig");
+const Gui = @import("Gui.zig");
 
 pub const AppRefs = struct {
     alloc: Allocator,
     canvas: *Canvas,
     gui: *Gui,
+    camera: *raylib.Camera2D,
 };
 
 const App = @This();
