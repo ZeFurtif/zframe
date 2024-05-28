@@ -65,7 +65,11 @@ pub fn main_loop(refs: App.AppRefs) !void {
             refs.gui.render();
 
             raylib.DrawFPS(10, 10);
-            raylib.DrawText(@tagName(refs.gui.get_action()), 10, 50, 20, raylib.WHITE);
+            for (0..refs.gui.history.items.len) |i| {
+                const new_pad = @as(i32, @intCast(i)) * 25;
+                raylib.DrawText(@tagName(refs.gui.history.items[i]), 10, raylib.GetScreenHeight() - 25 - new_pad, 20, raylib.WHITE);
+            }
+
             raylib.EndDrawing();
         }
     }
