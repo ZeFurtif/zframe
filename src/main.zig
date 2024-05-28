@@ -27,16 +27,6 @@ pub fn main() !void {
     defer gui.deinit();
 
     var camera: raylib.Camera2D = raylib.Camera2D{};
-    camera.target = raylib.Vector2{
-        .x = @floatFromInt(@divTrunc(canvas.width, 2)),
-        .y = @floatFromInt(@divTrunc(canvas.height, 2)),
-    };
-    camera.offset = raylib.Vector2{
-        .x = @floatFromInt(@divTrunc(raylib.GetScreenWidth(), 2)),
-        .y = @floatFromInt(@divTrunc(raylib.GetScreenHeight(), 2)),
-    };
-    camera.rotation = 0;
-    camera.zoom = 1;
 
     const app_refs: App.AppRefs = .{
         .alloc = alloc,
@@ -54,6 +44,9 @@ pub fn main_loop(refs: App.AppRefs) !void {
     raylib.SetConfigFlags(raylib.FLAG_WINDOW_RESIZABLE);
     raylib.InitWindow(800, 500, "zframe");
     raylib.MaximizeWindow();
+
+    refs.canvas.reset_camera(refs);
+
     //raylib.SetTargetFPS(raylib.GetMonitorRefreshRate(0));
 
     while (!raylib.WindowShouldClose()) {

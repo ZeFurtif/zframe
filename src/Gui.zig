@@ -63,6 +63,11 @@ pub fn update_action(self: *Gui) void {
             return;
         }
     }
+    if (raylib.GetMouseWheelMove() != 0) {
+        self.current_user_action = UserAction.canvas_scale;
+        return;
+    }
+
     if (raylib.IsMouseButtonDown(raylib.MOUSE_BUTTON_LEFT)) {
         self.current_user_action = UserAction.interact;
         return;
