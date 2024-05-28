@@ -61,7 +61,7 @@ pub fn interact(self: *Window, refs: App.AppRefs) void {
             self.window_state.is_scaling = true;
             return;
         }
-        if (!self.window_state.is_scaling) {
+        if (!(self.window_state.is_scaling or self.window_state.is_moving)) {
             self.window_state.is_moving = true;
             self.mouse_offset_x = raylib.GetMouseX() - self.x;
             self.mouse_offset_y = raylib.GetMouseY() - self.y;
