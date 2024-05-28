@@ -99,7 +99,7 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
         refs.camera.zoom = math.clamp(refs.camera.zoom, 0.05, 5);
         return;
     }
-    if (cur_action == UserAction.interact and self.is_mouse_inside(world_mouse_pos)) {
+    if (cur_action == UserAction.interact and self.is_mouse_inside(world_mouse_pos) and self.layers.items.len > 0) {
         raylib.BeginTextureMode(self.layers.items[self.selected_layer_id].target);
         raylib.DrawCircle(@intFromFloat(world_mouse_pos.x), @intFromFloat(world_mouse_pos.y), 10, raylib.BLACK);
         raylib.EndTextureMode();
