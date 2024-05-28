@@ -10,13 +10,12 @@ const App = @import("App.zig");
 
 pub const UserAction = enum {
     none,
-    canvas_draw,
-    canvas_erase,
+    interact,
     canvas_move,
     canvas_scale,
     canvas_rotate,
     canvas_reset_transform,
-    window_interact,
+    window_spawn,
     window_kill,
 };
 
@@ -39,26 +38,40 @@ pub fn deinit(self: *Gui) void {
 }
 
 pub fn update(self: *Gui, refs: App.AppRefs) void {
-    std.log.debug("UPDATE", .{});
+    self.update_action();
     self.window_manager.update(refs);
 }
 
-pub fn get_action(self: *Gui) UserAction {
+pub fn update_action(self: *Gui) void {
     if (raylib.IsKeyDown(raylib.KEY_LEFT_CONTROL)) {
+        if (raylib.IsKeyPressed(raylib.KEY_N)) {
+            self.current_user_action = UserAction.window_spawn;
+            return;
+        }
         if (raylib.IsKeyPressed(raylib.KEY_R)) {
             self.current_user_action = UserAction.canvas_reset_transform;
+            return;
         }
         if (raylib.IsKeyPressed(raylib.KEY_Z)) {
             self.current_user_action = UserAction.window_kill;
+            return;
         }
     }
     if (raylib.IsKeyDown(raylib.KEY_SPACE)) {
         if (raylib.IsMouseButtonDown(raylib.MOUSE_BUTTON_LEFT)) {
             self.current_user_action = UserAction.canvas_move;
+            return;
         }
-    } else {
-        self.current_user_action = UserAction.none;
     }
+    if (raylib.IsMouseButtonDown(raylib.MOUSE_BUTTON_LEFT)) {
+        self.current_user_action = UserAction.interact;
+        return;
+    }
+    self.current_user_action = UserAction.none;
+    return;
+}
+
+pub fn get_action(self: *Gui) UserAction {
     return self.current_user_action;
 }
 

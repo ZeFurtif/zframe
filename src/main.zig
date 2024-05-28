@@ -45,12 +45,17 @@ pub fn main() !void {
         .camera = &camera,
     };
 
-    try main_loop(app_refs);
-    //const main_loop_thread = try std.Thread.spawn(.{}, main_loop, .{app_refs});
-    //main_loop_thread.join();
+    //try main_loop(app_refs);
+    const main_loop_thread = try std.Thread.spawn(.{}, main_loop, .{app_refs});
+    main_loop_thread.join();
 }
 
 pub fn main_loop(refs: App.AppRefs) !void {
+    raylib.SetConfigFlags(raylib.FLAG_WINDOW_RESIZABLE);
+    raylib.InitWindow(800, 500, "zframe");
+    raylib.MaximizeWindow();
+    //raylib.SetTargetFPS(raylib.GetMonitorRefreshRate(0));
+
     while (!raylib.WindowShouldClose()) {
         {
             refs.gui.update(refs);
@@ -67,6 +72,7 @@ pub fn main_loop(refs: App.AppRefs) !void {
             refs.gui.render();
 
             raylib.DrawFPS(10, 10);
+            raylib.DrawText(@tagName(refs.gui.get_action()), 10, 50, 20, raylib.WHITE);
             raylib.EndDrawing();
         }
     }
