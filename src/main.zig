@@ -65,9 +65,14 @@ pub fn main_loop(refs: App.AppRefs) !void {
             refs.gui.render();
 
             raylib.DrawFPS(10, 10);
+
             for (0..refs.gui.history.items.len) |i| {
                 const new_pad = @as(i32, @intCast(i)) * 25;
-                raylib.DrawText(@tagName(refs.gui.history.items[i]), 10, raylib.GetScreenHeight() - 25 - new_pad, 20, raylib.WHITE);
+                const alpha = [_]u8{ 255, 220, 180, 130, 100, 70, 50, 30, 10, 5 };
+                const new_color = raylib.Color{ .r = 255, .g = 255, .b = 255, .a = alpha[i] };
+                raylib.BeginBlendMode(raylib.BLEND_ALPHA);
+                raylib.DrawText(@tagName(refs.gui.history.items[i]), 10, raylib.GetScreenHeight() - 25 - new_pad, 20, new_color);
+                raylib.EndBlendMode();
             }
 
             raylib.EndDrawing();
