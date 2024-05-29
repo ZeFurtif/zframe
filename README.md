@@ -8,3 +8,8 @@ A software built for drawing first. No technical bs, no hidden tools, no messy U
 - Fully functionnal canvas
 - Project Files
 - PNG/MP4 Renders
+
+### Current State
+- Canvas (w/ camera movement)
+- Drawing (kinda interpolated)
+- Window spawning/killing
