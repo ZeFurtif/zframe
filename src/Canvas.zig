@@ -30,13 +30,13 @@ canvas_state: CanvasState,
 
 pub fn init(alloc: Allocator) !Canvas {
     return .{
-        .width = 800,
-        .height = 600,
+        .width = 1920,
+        .height = 1080,
         .rect = .{
             .x = 0,
             .y = 0,
-            .width = @as(f32, @floatFromInt(800)),
-            .height = @as(f32, @floatFromInt(-600)),
+            .width = @as(f32, @floatFromInt(1920)),
+            .height = @as(f32, @floatFromInt(-1080)),
         },
         .layers = std.ArrayList(Layer).init(alloc),
         .selected_layer_id = 0,
@@ -65,7 +65,7 @@ pub fn reset_camera(self: *Canvas, refs: App.AppRefs) void {
         .y = @floatFromInt(@divTrunc(raylib.GetScreenHeight(), 2)),
     };
     refs.camera.rotation = 0;
-    refs.camera.zoom = 1;
+    refs.camera.zoom = 0.5;
 }
 
 pub fn new_layer(self: *Canvas, refs: App.AppRefs) void {
