@@ -63,6 +63,17 @@ pub fn reset_camera(self: *Canvas, refs: App.AppRefs) void {
     refs.camera.zoom = 1;
 }
 
+pub fn new_layer(self: *Canvas, refs: App.AppRefs) void {
+    var layer = Layer.init(refs.alloc);
+    layer.new_target(self.width, self.height);
+
+    if (self.layers.append(layer)) |stmt| {
+        _ = stmt;
+    } else |e| {
+        std.log.debug("{any}", .{e});
+    }
+}
+
 pub fn update(self: *Canvas, refs: App.AppRefs) void {
     self.interact(refs);
     if (self.canvas_state.is_dragged) {
@@ -85,7 +96,6 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
     if (cur_action == UserAction.canvas_move) {
         raylib.SetMouseCursor(raylib.MOUSE_CURSOR_RESIZE_ALL);
         if (!self.canvas_state.is_dragged) {
-            std.log.debug("he", .{});
             self.canvas_state.is_dragged = true;
             self.canvas_state.mouse_offset_x = raylib.GetMouseX();
             self.canvas_state.mouse_offset_y = raylib.GetMouseY();
@@ -101,7 +111,7 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
     }
     if (cur_action == UserAction.interact and self.is_mouse_inside(world_mouse_pos) and self.layers.items.len > 0) {
         raylib.BeginTextureMode(self.layers.items[self.selected_layer_id].target);
-        raylib.DrawCircle(@intFromFloat(world_mouse_pos.x), @intFromFloat(world_mouse_pos.y), 10, raylib.BLACK);
+        raylib.DrawCircle(@intFromFloat(world_mouse_pos.x), @intFromFloat(world_mouse_pos.y), 7, raylib.BLACK);
         raylib.EndTextureMode();
     }
     self.canvas_state.is_dragged = false;

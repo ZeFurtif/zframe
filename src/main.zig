@@ -16,7 +16,7 @@ pub fn main() !void {
     const alloc = gpa.allocator();
     defer {
         const deinit_status = gpa.deinit();
-        if (deinit_status == .leak) expect(false) catch @panic("TEST FAIL");
+        if (deinit_status == .leak) expect(false) catch @panic("MEMORY LEAK");
     }
 
     //INITS
@@ -46,6 +46,7 @@ pub fn main_loop(refs: App.AppRefs) !void {
     raylib.MaximizeWindow();
 
     refs.canvas.reset_camera(refs);
+    refs.canvas.new_layer(refs);
 
     //raylib.SetTargetFPS(raylib.GetMonitorRefreshRate(0));
 

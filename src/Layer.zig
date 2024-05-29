@@ -9,7 +9,7 @@ const Layer = @This();
 target: raylib.RenderTexture2D,
 target_history: std.ArrayList(raylib.RenderTexture2D),
 
-pub fn init(alloc: Allocator) !Layer {
+pub fn init(alloc: Allocator) Layer {
     return .{
         .target = raylib.RenderTexture2D{},
         .target_history = std.ArrayList(raylib.RenderTexture2D).init(alloc),
