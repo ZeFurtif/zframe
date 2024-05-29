@@ -15,6 +15,7 @@ pub const UserAction = enum {
     canvas_scale,
     canvas_rotate,
     canvas_reset_transform,
+    window_interact,
     window_spawn,
     window_kill,
 };

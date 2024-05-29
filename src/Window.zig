@@ -7,12 +7,15 @@ const raylib = @cImport({
 });
 
 const App = @import("App.zig");
+const Layout = @import("Layout.zig");
 const UserAction = @import("Gui.zig").UserAction;
 
 pub const WindowState = struct {
     is_moving: bool = false,
     is_scaling: bool = false,
     is_pinned: bool = false,
+    mouse_offset_x: i32 = 0,
+    mouse_offset_y: i32 = 0,
 };
 
 const Window = @This();
@@ -22,10 +25,9 @@ y: i32,
 width: i32,
 height: i32,
 window_state: WindowState,
-mouse_offset_x: i32,
-mouse_offset_y: i32,
+layout: Layout,
 
-pub fn init(title: []const u8, x: i32, y: i32, width: i32, height: i32) !Window {
+pub fn init(refs: App.AppRefs, title: []const u8, x: i32, y: i32, width: i32, height: i32) !Window {
     var ret_title = [_]u8{0} ** 20;
     const title_len = if (title.len < ret_title.len - 1) title.len else ret_title.len - 1;
     @memcpy(ret_title[0..title_len], title);
@@ -37,8 +39,7 @@ pub fn init(title: []const u8, x: i32, y: i32, width: i32, height: i32) !Window 
         .width = width,
         .height = height,
         .window_state = WindowState{},
-        .mouse_offset_x = 0,
-        .mouse_offset_y = 0,
+        .layout = Layout.init(refs),
     };
 }
 
@@ -57,14 +58,15 @@ pub fn is_mouse_on_resize_area(self: *Window) bool {
 pub fn interact(self: *Window, refs: App.AppRefs) void {
     const cur_action = refs.gui.get_action();
     if (cur_action == UserAction.interact and self.is_mouse_inside()) {
+        refs.gui.current_user_action = UserAction.window_interact;
         if (self.is_mouse_on_resize_area() and !self.window_state.is_moving) {
             self.window_state.is_scaling = true;
             return;
         }
         if (!(self.window_state.is_scaling or self.window_state.is_moving)) {
             self.window_state.is_moving = true;
-            self.mouse_offset_x = raylib.GetMouseX() - self.x;
-            self.mouse_offset_y = raylib.GetMouseY() - self.y;
+            self.window_state.mouse_offset_x = raylib.GetMouseX() - self.x;
+            self.window_state.mouse_offset_y = raylib.GetMouseY() - self.y;
         }
     }
     if (cur_action == UserAction.none) {
@@ -83,8 +85,8 @@ pub fn update(self: *Window, refs: App.AppRefs) void {
         self.height = math.clamp(self.height, 100, raylib.GetScreenHeight() - self.y);
     }
     if (self.window_state.is_moving) {
-        self.x = raylib.GetMouseX() - self.mouse_offset_x;
-        self.y = raylib.GetMouseY() - self.mouse_offset_y;
+        self.x = raylib.GetMouseX() - self.window_state.mouse_offset_x;
+        self.y = raylib.GetMouseY() - self.window_state.mouse_offset_y;
         self.x = math.clamp(self.x, 0, raylib.GetScreenWidth() - self.width);
         self.y = math.clamp(self.y, 0, raylib.GetScreenHeight() - self.height);
     }

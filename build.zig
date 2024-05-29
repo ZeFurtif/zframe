@@ -15,8 +15,8 @@ pub fn build(b: *std.Build) void {
     exe.addIncludePath(.{ .path = "lib/raylib/include" });
     exe.addLibraryPath(.{ .path = "lib/raylib/lib" });
     exe.linkSystemLibrary("raylibdll");
-    b.installFile("lib/raylib/lib/raylib.dll", "bin/raylib.dll");
 
+    b.installFile("lib/raylib/lib/raylib.dll", "bin/raylib.dll");
     b.installArtifact(exe);
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());

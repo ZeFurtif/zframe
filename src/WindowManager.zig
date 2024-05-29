@@ -11,12 +11,10 @@ const UserAction = @import("Gui.zig").UserAction;
 
 const WindowManager = @This();
 windows: std.ArrayList(Window),
-selected_window_id: usize,
 
 pub fn init(alloc: Allocator) !WindowManager {
     return .{
         .windows = std.ArrayList(Window).init(alloc),
-        .selected_window_id = 0,
     };
 }
 
@@ -42,16 +40,18 @@ pub fn update(self: *WindowManager, refs: App.AppRefs) void {
         if (self.windows.items.len <= 0) {
             return;
         }
-        _ = self.windows.orderedRemove(self.selected_window_id);
+        self.windows.items[0].layout.deinit();
+        _ = self.windows.orderedRemove(0);
         return;
     }
     if (cur_action == UserAction.window_spawn) {
         //std.log.debug("NEW WINDOW", .{});
-        const new_window = try Window.init("Window", 1500, 100, 200, 150);
+        const new_window = try Window.init(refs, "Window", 1500, 100, 200, 150);
         if (@TypeOf(new_window) != Window) {
             return;
         }
         if (self.windows.append(new_window)) |stmt| {
+            self.bring_to_top(self.windows.items.len - 1);
             return stmt;
         } else |e| {
             std.log.debug("ERROR {any}", .{e});
@@ -59,17 +59,16 @@ pub fn update(self: *WindowManager, refs: App.AppRefs) void {
         return;
     }
 
-    var i = self.windows.items.len;
-    while (i != 0) {
-        i -= 1;
+    var i: usize = 0;
+    while (i != self.windows.items.len) {
         if (self.windows.items[i].is_mouse_inside() or (self.windows.items[i].window_state.is_moving or self.windows.items[i].window_state.is_scaling)) {
-            if (self.selected_window_id != i and (self.windows.items[i].window_state.is_moving or self.windows.items[i].window_state.is_scaling)) {
-                self.selected_window_id = i;
-                self.bring_to_top(self.selected_window_id);
+            if (i != 0 and (self.windows.items[i].window_state.is_moving or self.windows.items[i].window_state.is_scaling)) {
+                self.bring_to_top(i);
             }
             self.windows.items[i].update(refs);
             return;
         }
+        i += 1;
     }
 }
 
