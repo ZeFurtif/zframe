@@ -97,7 +97,7 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
         const image = &raylib.LoadImageFromTexture(self.layers.items[self.selected_layer_id].target.texture);
         std.log.debug("{any}", .{image});
         raylib.ImageFlipVertical(@constCast(image));
-        _ = raylib.ExportImage(image.*, "my_amazing_texture_painting.png");
+        _ = raylib.ExportImage(image.*, "my_amazing_painting.png");
         raylib.UnloadImage(image.*);
         std.log.debug("SAVED", .{});
     }

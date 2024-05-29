@@ -37,7 +37,6 @@ pub fn save_history(self: *Layer) void {
     if (self.target_history.items.len > 5) {
         _ = self.target_history.pop();
     }
-    std.log.debug("{any}", .{self.target_history.items.len});
 }
 
 pub fn undo(self: *Layer) void {
