@@ -16,6 +16,7 @@ pub const UserAction = enum {
     canvas_rotate,
     canvas_reset_transform,
     canvas_undo,
+    canvas_save,
     window_interact,
     window_spawn,
     window_kill,
@@ -61,6 +62,10 @@ pub fn update_action(self: *Gui) void {
         }
         if (raylib.IsKeyPressed(raylib.KEY_W)) {
             self.current_user_action = UserAction.canvas_undo;
+            return;
+        }
+        if (raylib.IsKeyPressed(raylib.KEY_S)) {
+            self.current_user_action = UserAction.canvas_save;
             return;
         }
     }

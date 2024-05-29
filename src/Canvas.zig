@@ -93,7 +93,15 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
     const cur_action = refs.gui.get_action();
 
     const world_mouse_pos = raylib.GetScreenToWorld2D(raylib.GetMousePosition(), refs.camera.*);
-    // MOVEMENT
+    if (cur_action == UserAction.canvas_save) {
+        const image = &raylib.LoadImageFromTexture(self.layers.items[self.selected_layer_id].target.texture);
+        std.log.debug("{any}", .{image});
+        raylib.ImageFlipVertical(@constCast(image));
+        _ = raylib.ExportImage(image.*, "my_amazing_texture_painting.png");
+        raylib.UnloadImage(image.*);
+        std.log.debug("SAVED", .{});
+    }
+
     if (cur_action == UserAction.canvas_reset_transform) {
         self.reset_camera(refs);
         return;
