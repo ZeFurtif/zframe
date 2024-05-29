@@ -16,6 +16,8 @@ pub const CanvasState = struct {
     mouse_offset_y: i32 = 0,
     saved_camera_x: f32 = 0,
     saved_camera_y: f32 = 0,
+    draw_x: f32 = 0,
+    draw_y: f32 = 0,
 };
 
 const Canvas = @This();
@@ -43,6 +45,9 @@ pub fn init(alloc: Allocator) !Canvas {
 }
 
 pub fn deinit(self: *Canvas) void {
+    for (0..self.layers.items.len) |i| {
+        self.layers.items[i].deinit();
+    }
     self.layers.deinit();
 }
 
@@ -91,8 +96,12 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
     // MOVEMENT
     if (cur_action == UserAction.canvas_reset_transform) {
         self.reset_camera(refs);
+        return;
     }
-
+    if (cur_action == UserAction.canvas_undo) {
+        self.layers.items[self.selected_layer_id].undo();
+        return;
+    }
     if (cur_action == UserAction.canvas_move) {
         raylib.SetMouseCursor(raylib.MOUSE_CURSOR_RESIZE_ALL);
         if (!self.canvas_state.is_dragged) {
@@ -105,14 +114,25 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
         return;
     }
     if (cur_action == UserAction.canvas_scale) {
-        refs.camera.zoom += (raylib.GetMouseWheelMove() * 0.1);
+        refs.camera.zoom += (raylib.GetMouseWheelMove() * 0.1 * refs.camera.zoom);
         refs.camera.zoom = math.clamp(refs.camera.zoom, 0.05, 5);
         return;
     }
     if (cur_action == UserAction.interact and self.is_mouse_inside(world_mouse_pos) and self.layers.items.len > 0) {
+        self.canvas_state.draw_x = @divTrunc((self.canvas_state.draw_x * 3 + world_mouse_pos.x), 4);
+        self.canvas_state.draw_y = @divTrunc((self.canvas_state.draw_y * 3 + world_mouse_pos.y), 4);
+        self.layers.items[self.selected_layer_id].saved = false;
         raylib.BeginTextureMode(self.layers.items[self.selected_layer_id].target);
-        raylib.DrawCircle(@intFromFloat(world_mouse_pos.x), @intFromFloat(world_mouse_pos.y), 7, raylib.BLACK);
+        raylib.DrawCircle(@intFromFloat(self.canvas_state.draw_x), @intFromFloat(self.canvas_state.draw_y), 5, raylib.BLACK);
         raylib.EndTextureMode();
+        return;
+    }
+    if (cur_action == UserAction.none) {
+        if (self.layers.items[self.selected_layer_id].saved == false) {
+            self.layers.items[self.selected_layer_id].save_history();
+        }
+        self.canvas_state.draw_x = world_mouse_pos.x;
+        self.canvas_state.draw_y = world_mouse_pos.y;
     }
     self.canvas_state.is_dragged = false;
     raylib.SetMouseCursor(raylib.MOUSE_CURSOR_DEFAULT);

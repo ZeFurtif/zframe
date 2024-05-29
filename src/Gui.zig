@@ -15,6 +15,7 @@ pub const UserAction = enum {
     canvas_scale,
     canvas_rotate,
     canvas_reset_transform,
+    canvas_undo,
     window_interact,
     window_spawn,
     window_kill,
@@ -58,6 +59,10 @@ pub fn update_action(self: *Gui) void {
             self.current_user_action = UserAction.window_kill;
             return;
         }
+        if (raylib.IsKeyPressed(raylib.KEY_W)) {
+            self.current_user_action = UserAction.canvas_undo;
+            return;
+        }
     }
     if (raylib.IsKeyDown(raylib.KEY_SPACE)) {
         if (raylib.IsMouseButtonDown(raylib.MOUSE_BUTTON_LEFT)) {
@@ -86,7 +91,7 @@ pub fn update_history(self: *Gui) void {
             std.log.debug("{any}", .{e});
         }
     }
-    if (self.current_user_action != UserAction.none and self.history.items[0] != self.current_user_action) {
+    if (self.history.items[0] != self.current_user_action) {
         if (self.history.insert(0, self.current_user_action)) |stmt| {
             _ = stmt;
         } else |e| {

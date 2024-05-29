@@ -27,7 +27,19 @@ height: i32,
 window_state: WindowState,
 layout: Layout,
 
-pub fn init(refs: App.AppRefs, title: []const u8, x: i32, y: i32, width: i32, height: i32) !Window {
+pub fn init(refs: App.AppRefs) !Window {
+    return .{
+        .title = [_]u8{" "},
+        .x = 0,
+        .y = 0,
+        .width = 100,
+        .height = 100,
+        .window_state = WindowState{},
+        .layout = Layout.init(refs),
+    };
+}
+
+pub fn args_init(refs: App.AppRefs, title: []const u8, x: i32, y: i32, width: i32, height: i32) !Window {
     var ret_title = [_]u8{0} ** 20;
     const title_len = if (title.len < ret_title.len - 1) title.len else ret_title.len - 1;
     @memcpy(ret_title[0..title_len], title);

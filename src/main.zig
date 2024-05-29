@@ -9,6 +9,7 @@ const raylib = @cImport({
 const App = @import("App.zig");
 const Canvas = @import("Canvas.zig");
 const Gui = @import("Gui.zig");
+const UserAction = Gui.UserAction;
 
 pub fn main() !void {
     //MEMORY
@@ -67,15 +68,18 @@ pub fn main_loop(refs: App.AppRefs) !void {
 
             raylib.DrawFPS(10, 10);
 
+            var actual_i: usize = 0;
             for (0..refs.gui.history.items.len) |i| {
-                const new_pad = @as(i32, @intCast(i)) * 25;
-                const alpha = [_]u8{ 255, 220, 180, 130, 100, 70, 50, 30, 10, 5 };
-                const new_color = raylib.Color{ .r = 255, .g = 255, .b = 255, .a = alpha[i] };
-                raylib.BeginBlendMode(raylib.BLEND_ALPHA);
-                raylib.DrawText(@tagName(refs.gui.history.items[i]), 10, raylib.GetScreenHeight() - 25 - new_pad, 20, new_color);
-                raylib.EndBlendMode();
+                if (refs.gui.history.items[i] != UserAction.none) {
+                    const new_pad = @as(i32, @intCast(actual_i)) * 25;
+                    const alpha = [_]u8{ 255, 220, 180, 130, 100, 70, 50, 30, 10, 5 };
+                    const new_color = raylib.Color{ .r = 255, .g = 255, .b = 255, .a = alpha[actual_i] };
+                    raylib.BeginBlendMode(raylib.BLEND_ALPHA);
+                    raylib.DrawText(@tagName(refs.gui.history.items[i]), 10, raylib.GetScreenHeight() - 25 - new_pad, 20, new_color);
+                    raylib.EndBlendMode();
+                    actual_i += 1;
+                }
             }
-
             raylib.EndDrawing();
         }
     }
