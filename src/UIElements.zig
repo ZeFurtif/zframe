@@ -8,7 +8,7 @@ const raylib = @cImport({
 
 const App = @import("App.zig");
 
-const Anchor = enum {
+pub const Anchor = enum {
     top_left,
     top_center,
     top_right,
@@ -39,18 +39,21 @@ pub fn init(refs: App.AppRefs) UIElement {
     };
 }
 
-pub fn arg_init(refs: App.AppRefs, x: i16, y: i16, width: i16, height: i16, anchoring: Anchor, content: [50]u8) UIElement {
-    var cntnt = std.ArrayList(u8).init(refs.alloc);
-    cntnt.appendSlice(content);
-
-    return .{
+pub fn args_init(refs: App.AppRefs, x: i16, y: i16, width: i16, height: i16, anchoring: Anchor, content: []const u8) UIElement {
+    var to_ret: UIElement = .{
         .x = x,
         .y = y,
         .width = width,
         .height = height,
         .anchor = anchoring,
-        .content = cntnt,
+        .content = std.ArrayList(u8).init(refs.alloc),
     };
+    if (to_ret.content.appendSlice(content)) |stmt| {
+        _ = stmt;
+    } else |e| {
+        std.log.debug("ERROR {any}", .{e});
+    }
+    return to_ret;
 }
 
 pub fn deinit(self: *UIElement) void {

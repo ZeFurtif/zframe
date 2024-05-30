@@ -21,3 +21,11 @@ pub fn init(refs: App.AppRefs) Layout {
 pub fn deinit(self: *Layout) void {
     self.ui_elements.deinit();
 }
+
+pub fn addElement(self: *Layout, refs: App.AppRefs) void {
+    if (self.ui_elements.append(UIElement.args_init(refs, 5, 5, 100, 100, UIElement.Anchor.top_left, "Hello World"))) |stmt| {
+        _ = stmt;
+    } else |e| {
+        std.log.debug("ERROR {any}", .{e});
+    }
+}
