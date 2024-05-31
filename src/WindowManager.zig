@@ -19,6 +19,11 @@ pub fn init(alloc: Allocator) !WindowManager {
 }
 
 pub fn deinit(self: *WindowManager) void {
+    var i: usize = 0;
+    while (i != self.windows.items.len) {
+        self.windows.items[i].deinit();
+        i += 1;
+    }
     self.windows.deinit();
 }
 

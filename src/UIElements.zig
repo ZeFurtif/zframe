@@ -39,6 +39,10 @@ pub fn init(refs: App.AppRefs) UIElement {
     };
 }
 
+pub fn deinit(self: *UIElement) void {
+    self.content.deinit();
+}
+
 pub fn args_init(refs: App.AppRefs, x: i16, y: i16, width: i16, height: i16, anchoring: Anchor, content: []const u8) UIElement {
     var to_ret: UIElement = .{
         .x = x,
@@ -56,6 +60,7 @@ pub fn args_init(refs: App.AppRefs, x: i16, y: i16, width: i16, height: i16, anc
     return to_ret;
 }
 
-pub fn deinit(self: *UIElement) void {
-    self.content.deinit();
+pub fn render(self: *UIElement, parent_x: i32, parent_y: i32) void {
+    raylib.DrawRectangle(self.x + parent_x, self.y + parent_y, self.width, self.height, raylib.BLACK);
+    std.log.debug("DRAWING", .{});
 }

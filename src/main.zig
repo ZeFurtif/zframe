@@ -83,5 +83,6 @@ pub fn main_loop(refs: App.AppRefs) !void {
             raylib.EndDrawing();
         }
     }
+    std.log.debug("WINDOW {any}", .{refs.gui.window_manager.windows.items[0].layout.ui_elements});
     raylib.CloseWindow();
 }

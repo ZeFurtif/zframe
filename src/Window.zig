@@ -39,6 +39,10 @@ pub fn init(refs: App.AppRefs) !Window {
     };
 }
 
+pub fn deinit(self: *Window) void {
+    self.layout.deinit();
+}
+
 pub fn args_init(refs: App.AppRefs, title: []const u8, x: i32, y: i32, width: i32, height: i32) !Window {
     var ret_title = [_]u8{0} ** 20;
     const title_len = if (title.len < ret_title.len - 1) title.len else ret_title.len - 1;
@@ -69,18 +73,23 @@ pub fn is_mouse_on_resize_area(self: *Window) bool {
 
 pub fn interact(self: *Window, refs: App.AppRefs) void {
     const cur_action = refs.gui.get_action();
-    if (cur_action == UserAction.interact and self.is_mouse_inside()) {
-        refs.gui.current_user_action = UserAction.window_interact;
-        if (self.is_mouse_on_resize_area() and !self.window_state.is_moving) {
-            self.window_state.is_scaling = true;
-            return;
+    if (cur_action == UserAction.interact) {
+        if (self.window_state.is_scaling or self.window_state.is_moving) {
+            refs.gui.current_user_action = UserAction.window_interact;
         }
-        if (!(self.window_state.is_scaling or self.window_state.is_moving)) {
-            self.window_state.is_moving = true;
-            self.window_state.mouse_offset_x = raylib.GetMouseX() - self.x;
-            self.window_state.mouse_offset_y = raylib.GetMouseY() - self.y;
+        if (self.is_mouse_inside()) {
+            if (self.is_mouse_on_resize_area() and !self.window_state.is_moving) {
+                self.window_state.is_scaling = true;
+                return;
+            }
+            if (!(self.window_state.is_scaling or self.window_state.is_moving)) {
+                self.window_state.is_moving = true;
+                self.window_state.mouse_offset_x = raylib.GetMouseX() - self.x;
+                self.window_state.mouse_offset_y = raylib.GetMouseY() - self.y;
+            }
         }
     }
+
     if (cur_action == UserAction.none) {
         raylib.SetMouseCursor(raylib.MOUSE_CURSOR_DEFAULT);
         self.window_state.is_scaling = false;
@@ -109,4 +118,6 @@ pub fn render(self: *Window) void {
     raylib.DrawRectangle(self.x, self.y, self.width + 3, self.height + 3, raylib.BLACK);
     raylib.DrawRectangle(self.x, self.y, self.width, self.height, raylib.GRAY);
     raylib.DrawText(&self.title, self.x + 10, self.y + 10, 10, raylib.WHITE);
+
+    self.layout.render(self.x, self.y);
 }
