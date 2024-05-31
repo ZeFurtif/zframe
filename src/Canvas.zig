@@ -99,6 +99,7 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
         raylib.ImageFlipVertical(@constCast(image));
         _ = raylib.ExportImage(image.*, "my_amazing_painting.png");
         raylib.UnloadImage(image.*);
+        std.log.debug("{any}", .{@TypeOf(image.*)});
         std.log.debug("SAVED", .{});
     }
 

@@ -20,47 +20,57 @@ pub const Anchor = enum {
     bottom_right,
 };
 
+pub const ElementType = enum {
+    text,
+    button,
+};
+
 const UIElement = @This();
 x: i16,
 y: i16,
 width: i16,
 height: i16,
 anchor: Anchor,
-content: std.ArrayList(u8),
+content: [64]u8,
+element_type: ElementType,
 
-pub fn init(refs: App.AppRefs) UIElement {
+pub fn init() UIElement {
     return .{
         .x = 0,
         .y = 0,
         .width = 0,
         .height = 0,
         .anchor = Anchor.top_left,
-        .content = std.ArrayList(u8).init(refs.alloc),
+        .content = [64]u8,
+        .element_type = ElementType.text,
     };
 }
 
-pub fn deinit(self: *UIElement) void {
-    self.content.deinit();
-}
-
-pub fn args_init(refs: App.AppRefs, x: i16, y: i16, width: i16, height: i16, anchoring: Anchor, content: []const u8) UIElement {
+pub fn args_init(x: i16, y: i16, width: i16, height: i16, anchoring: Anchor, content: []const u8, element_type: ElementType) UIElement {
     var to_ret: UIElement = .{
         .x = x,
         .y = y,
         .width = width,
         .height = height,
         .anchor = anchoring,
-        .content = std.ArrayList(u8).init(refs.alloc),
+        .content = [_]u8{undefined} ** 64,
+        .element_type = element_type,
     };
-    if (to_ret.content.appendSlice(content)) |stmt| {
-        _ = stmt;
-    } else |e| {
-        std.log.debug("ERROR {any}", .{e});
+    for (content, 0..) |byte, i| {
+        to_ret.content[i] = byte;
     }
     return to_ret;
 }
 
 pub fn render(self: *UIElement, parent_x: i32, parent_y: i32) void {
-    raylib.DrawRectangle(self.x + parent_x, self.y + parent_y, self.width, self.height, raylib.BLACK);
-    std.log.debug("DRAWING", .{});
+    const world_x = parent_x + self.x;
+    const world_y = parent_y + self.y;
+    switch (self.element_type) {
+        ElementType.button => {
+            raylib.DrawRectangle(world_x, world_y, self.width, self.height, raylib.DARKGRAY);
+        },
+        ElementType.text => {
+            raylib.DrawText(&self.content, world_x, world_y, 10, raylib.WHITE);
+        },
+    }
 }

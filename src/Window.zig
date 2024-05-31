@@ -74,19 +74,18 @@ pub fn is_mouse_on_resize_area(self: *Window) bool {
 pub fn interact(self: *Window, refs: App.AppRefs) void {
     const cur_action = refs.gui.get_action();
     if (cur_action == UserAction.interact) {
-        if (self.window_state.is_scaling or self.window_state.is_moving) {
-            refs.gui.current_user_action = UserAction.window_interact;
-        }
         if (self.is_mouse_inside()) {
             if (self.is_mouse_on_resize_area() and !self.window_state.is_moving) {
                 self.window_state.is_scaling = true;
-                return;
             }
             if (!(self.window_state.is_scaling or self.window_state.is_moving)) {
                 self.window_state.is_moving = true;
                 self.window_state.mouse_offset_x = raylib.GetMouseX() - self.x;
                 self.window_state.mouse_offset_y = raylib.GetMouseY() - self.y;
             }
+        }
+        if (self.window_state.is_scaling or self.window_state.is_moving) {
+            refs.gui.current_user_action = UserAction.window_interact;
         }
     }
 
