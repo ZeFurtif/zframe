@@ -10,6 +10,12 @@ const App = @import("App.zig");
 const UIElement = @import("UIElements.zig");
 const ElementType = UIElement.ElementType;
 
+const WindowType = enum {
+    user_action_history,
+    timeline,
+    onion_skin,
+};
+
 const Layout = @This();
 ui_elements: std.ArrayList(UIElement),
 
@@ -28,6 +34,15 @@ pub fn addElement(self: *Layout) void {
         _ = stmt;
     } else |e| {
         std.log.debug("ERROR {any}", .{e});
+    }
+}
+
+pub fn fillLayout(self: *Layout, window_type: WindowType) void {
+    switch (window_type) {
+        WindowType.user_action_history => {
+            self.ui_elements.append(UIElement.args_init(5, 5, 100, 20, UIElement.Anchor.top_left, "History", ElementType.text));
+        },
+        WindowType.timeline => {},
     }
 }
 
