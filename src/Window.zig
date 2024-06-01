@@ -19,7 +19,6 @@ pub const WindowState = struct {
 };
 
 const Window = @This();
-title: [20]u8,
 x: i32,
 y: i32,
 width: i32,
@@ -29,7 +28,6 @@ layout: Layout,
 
 pub fn init(refs: App.AppRefs) !Window {
     return .{
-        .title = [_]u8{" "},
         .x = 0,
         .y = 0,
         .width = 100,
@@ -43,13 +41,8 @@ pub fn deinit(self: *Window) void {
     self.layout.deinit();
 }
 
-pub fn args_init(refs: App.AppRefs, title: []const u8, x: i32, y: i32, width: i32, height: i32) !Window {
-    var ret_title = [_]u8{0} ** 20;
-    const title_len = if (title.len < ret_title.len - 1) title.len else ret_title.len - 1;
-    @memcpy(ret_title[0..title_len], title);
-    ret_title[title_len] = 0;
+pub fn args_init(refs: App.AppRefs, x: i32, y: i32, width: i32, height: i32) !Window {
     return .{
-        .title = ret_title,
         .x = x,
         .y = y,
         .width = width,
@@ -116,7 +109,10 @@ pub fn render(self: *Window) void {
     raylib.DrawRectangleLines(self.x - 1, self.y - 1, self.width + 2, self.height + 2, raylib.WHITE);
     raylib.DrawRectangle(self.x, self.y, self.width + 3, self.height + 3, raylib.BLACK);
     raylib.DrawRectangle(self.x, self.y, self.width, self.height, raylib.GRAY);
-    raylib.DrawText(&self.title, self.x + 10, self.y + 10, 10, raylib.WHITE);
+
+    if ((self.is_mouse_inside() and self.is_mouse_on_resize_area()) or self.window_state.is_scaling) {
+        raylib.DrawTriangle(raylib.Vector2{ .x = @floatFromInt(self.width + self.x - 10), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height - 10) }, raylib.WHITE);
+    }
 
     self.layout.render(self.x, self.y);
 }

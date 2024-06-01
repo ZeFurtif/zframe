@@ -10,7 +10,7 @@ const App = @import("App.zig");
 const UIElement = @import("UIElements.zig");
 const ElementType = UIElement.ElementType;
 
-const WindowType = enum {
+const LayoutType = enum {
     user_action_history,
     timeline,
     onion_skin,
@@ -37,12 +37,12 @@ pub fn addElement(self: *Layout) void {
     }
 }
 
-pub fn fillLayout(self: *Layout, window_type: WindowType) void {
+pub fn fillLayout(self: *Layout, window_type: LayoutType) void {
     switch (window_type) {
-        WindowType.user_action_history => {
+        LayoutType.user_action_history => {
             self.ui_elements.append(UIElement.args_init(5, 5, 100, 20, UIElement.Anchor.top_left, "History", ElementType.text));
         },
-        WindowType.timeline => {},
+        LayoutType.timeline => {},
     }
 }
 

@@ -51,7 +51,7 @@ pub fn update(self: *WindowManager, refs: App.AppRefs) void {
     }
     if (cur_action == UserAction.window_spawn) {
         //std.log.debug("NEW WINDOW", .{});
-        var new_window = try Window.args_init(refs, "Window", 1500, 100, 200, 150);
+        var new_window = try Window.args_init(refs, 1500, 100, 200, 150);
         new_window.layout.addElement();
         if (@TypeOf(new_window) != Window) {
             return;
