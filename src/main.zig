@@ -61,7 +61,7 @@ pub fn main_loop(refs: App.AppRefs) !void {
             raylib.ClearBackground(raylib.DARKGRAY);
 
             raylib.BeginMode2D(refs.camera.*);
-            refs.canvas.render();
+            refs.canvas.render(refs);
             raylib.EndMode2D();
 
             refs.gui.render();

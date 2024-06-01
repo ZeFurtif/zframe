@@ -26,6 +26,7 @@ height: i32,
 rect: raylib.Rectangle,
 layers: std.ArrayList(Layer),
 selected_layer_id: usize,
+current_frame: usize,
 canvas_state: CanvasState,
 
 pub fn init(alloc: Allocator) !Canvas {
@@ -40,6 +41,7 @@ pub fn init(alloc: Allocator) !Canvas {
         },
         .layers = std.ArrayList(Layer).init(alloc),
         .selected_layer_id = 0,
+        .current_frame = 0,
         .canvas_state = CanvasState{},
     };
 }
@@ -70,7 +72,7 @@ pub fn reset_camera(self: *Canvas, refs: App.AppRefs) void {
 
 pub fn new_layer(self: *Canvas, refs: App.AppRefs) void {
     var layer = Layer.init(refs.alloc);
-    layer.new_target(self.width, self.height);
+    layer.new_frame(refs);
 
     if (self.layers.append(layer)) |stmt| {
         _ = stmt;
@@ -94,7 +96,7 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
 
     const world_mouse_pos = raylib.GetScreenToWorld2D(raylib.GetMousePosition(), refs.camera.*);
     if (cur_action == UserAction.canvas_save) {
-        const image = &raylib.LoadImageFromTexture(self.layers.items[self.selected_layer_id].target.texture);
+        const image = &raylib.LoadImageFromTexture(self.layers.items[self.selected_layer_id].frames.items[self.current_frame].target.texture);
         std.log.debug("{any}", .{image});
         raylib.ImageFlipVertical(@constCast(image));
         _ = raylib.ExportImage(image.*, "my_amazing_painting.png");
@@ -107,10 +109,7 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
         self.reset_camera(refs);
         return;
     }
-    if (cur_action == UserAction.canvas_undo) {
-        self.layers.items[self.selected_layer_id].undo();
-        return;
-    }
+
     if (cur_action == UserAction.canvas_move) {
         raylib.SetMouseCursor(raylib.MOUSE_CURSOR_RESIZE_ALL);
         if (!self.canvas_state.is_dragged) {
@@ -130,16 +129,10 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
     if (cur_action == UserAction.interact and self.is_mouse_inside(world_mouse_pos) and self.layers.items.len > 0) {
         self.canvas_state.draw_x = @divTrunc((self.canvas_state.draw_x * 3 + world_mouse_pos.x), 4);
         self.canvas_state.draw_y = @divTrunc((self.canvas_state.draw_y * 3 + world_mouse_pos.y), 4);
-        self.layers.items[self.selected_layer_id].saved = false;
-        raylib.BeginTextureMode(self.layers.items[self.selected_layer_id].target);
-        raylib.DrawCircle(@intFromFloat(self.canvas_state.draw_x), @intFromFloat(self.canvas_state.draw_y), 5, raylib.BLACK);
-        raylib.EndTextureMode();
+        self.layers.items[self.selected_layer_id].frames.items[self.current_frame].draw(@intFromFloat(self.canvas_state.draw_x), @intFromFloat(self.canvas_state.draw_y));
         return;
     }
     if (cur_action == UserAction.none) {
-        if (self.layers.items[self.selected_layer_id].saved == false) {
-            self.layers.items[self.selected_layer_id].save_history();
-        }
         self.canvas_state.draw_x = world_mouse_pos.x;
         self.canvas_state.draw_y = world_mouse_pos.y;
     }
@@ -147,11 +140,13 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
     raylib.SetMouseCursor(raylib.MOUSE_CURSOR_DEFAULT);
 }
 
-pub fn render(self: *Canvas) void {
+pub fn render(self: *Canvas, refs: App.AppRefs) void {
     raylib.DrawRectangle(@intFromFloat(self.rect.x), @intFromFloat(self.rect.y), @intFromFloat(self.rect.width), @intFromFloat(-self.rect.height), raylib.WHITE);
-    var i = self.layers.items.len;
-    while (i != 0) {
-        i -= 1;
-        raylib.DrawTextureRec(self.layers.items[i].target.texture, self.rect, raylib.Vector2{}, raylib.WHITE);
+    var i: usize = 0;
+    while (i < self.layers.items.len) {
+        if (self.layers.items[i].active) {
+            self.layers.items[i].render(refs);
+        }
+        i += 1;
     }
 }

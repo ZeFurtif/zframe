@@ -5,42 +5,49 @@ const raylib = @cImport({
     @cInclude("raylib.h");
 });
 
+const App = @import("App.zig");
+const Frame = @import("Frame.zig");
+
 const Layer = @This();
-target: raylib.RenderTexture2D,
-target_history: std.ArrayList(raylib.Texture),
-saved: bool,
+frames: std.ArrayList(Frame),
+active: bool,
 
 pub fn init(alloc: Allocator) Layer {
     return .{
-        .target = raylib.RenderTexture2D{},
-        .target_history = std.ArrayList(raylib.Texture).init(alloc),
-        .saved = false,
+        .frames = std.ArrayList(Frame).init(alloc),
+        .active = true,
     };
 }
 
 pub fn deinit(self: *Layer) void {
-    self.target_history.deinit();
+    self.frames.deinit();
 }
 
-pub fn new_target(self: *Layer, width: i32, height: i32) void {
-    self.target = raylib.LoadRenderTexture(width, height);
-}
-
-pub fn save_history(self: *Layer) void {
-    if (self.target_history.append(self.target.texture)) |stmt| {
-        self.saved = true;
+pub fn new_frame(self: *Layer, refs: App.AppRefs) void {
+    var frame = Frame.init();
+    frame.new_target(refs.canvas.width, refs.canvas.height);
+    if (self.frames.append(frame)) |stmt| {
         _ = stmt;
     } else |e| {
-        std.log.debug("{any}", .{e});
-    }
-
-    if (self.target_history.items.len > 5) {
-        _ = self.target_history.pop();
+        std.log.debug("ERROR : {any}", .{e});
     }
 }
 
-pub fn undo(self: *Layer) void {
-    if (self.target_history.items.len == 0) return;
-    self.target.texture = self.target_history.items[0];
-    _ = self.target_history.orderedRemove(0);
+pub fn get_current_frame_index(self: *Layer, pos: usize) ?usize {
+    var i: usize = 0;
+    var cur_pos: usize = 0;
+    while (i < self.frames.items.len) {
+        cur_pos += self.frames.items[i].exposure;
+        if (cur_pos >= pos) {
+            return i;
+        }
+        i += 1;
+    }
+    return null;
+}
+
+pub fn render(self: *Layer, refs: App.AppRefs) void {
+    const i = self.get_current_frame_index(refs.canvas.current_frame) orelse return;
+
+    self.frames.items[i].render(refs);
 }
