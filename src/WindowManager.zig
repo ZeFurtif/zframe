@@ -8,6 +8,7 @@ const raylib = @cImport({
 const App = @import("App.zig");
 const Window = @import("Window.zig");
 const UserAction = @import("Gui.zig").UserAction;
+const LayoutType = @import("Layout.zig").LayoutType;
 
 const WindowManager = @This();
 windows: std.ArrayList(Window),
@@ -36,12 +37,27 @@ pub fn bring_to_top(self: *WindowManager, id: usize) void {
     }
 }
 
+pub fn spawn_window(self: *WindowManager, refs: App.AppRefs, layout_type: LayoutType) void {
+    var new_window = try Window.args_init(refs, 1500, 100, 300, 250);
+
+    new_window.layout.fillLayout(layout_type);
+
+    if (@TypeOf(new_window) != Window) {
+        return;
+    }
+    if (self.windows.append(new_window)) |stmt| {
+        self.bring_to_top(self.windows.items.len - 1);
+        return stmt;
+    } else |e| {
+        std.log.debug("ERROR {any}", .{e});
+    }
+    return;
+}
+
 pub fn update(self: *WindowManager, refs: App.AppRefs) void {
     const cur_action = refs.gui.get_action();
-    //std.log.debug("{any}", .{cur_action});
 
     if (cur_action == UserAction.window_kill) {
-        //std.log.debug("KILL WINDOW", .{});
         if (self.windows.items.len <= 0) {
             return;
         }
@@ -50,18 +66,15 @@ pub fn update(self: *WindowManager, refs: App.AppRefs) void {
         return;
     }
     if (cur_action == UserAction.window_spawn) {
-        //std.log.debug("NEW WINDOW", .{});
-        var new_window = try Window.args_init(refs, 1500, 100, 200, 150);
-        new_window.layout.addElement();
-        if (@TypeOf(new_window) != Window) {
-            return;
-        }
-        if (self.windows.append(new_window)) |stmt| {
-            self.bring_to_top(self.windows.items.len - 1);
-            return stmt;
-        } else |e| {
-            std.log.debug("ERROR {any}", .{e});
-        }
+        self.spawn_window(refs, LayoutType.default);
+        return;
+    }
+    if (cur_action == UserAction.window_spawn_history) {
+        self.spawn_window(refs, LayoutType.history);
+        return;
+    }
+    if (cur_action == UserAction.window_spawn_timeline) {
+        self.spawn_window(refs, LayoutType.timeline);
         return;
     }
 
@@ -78,10 +91,10 @@ pub fn update(self: *WindowManager, refs: App.AppRefs) void {
     }
 }
 
-pub fn render(self: *WindowManager) void {
+pub fn render(self: *WindowManager, refs: App.AppRefs) void {
     var i = self.windows.items.len;
     while (i != 0) {
         i -= 1;
-        self.windows.items[i].render();
+        self.windows.items[i].render(refs);
     }
 }

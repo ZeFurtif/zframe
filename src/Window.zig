@@ -105,7 +105,7 @@ pub fn update(self: *Window, refs: App.AppRefs) void {
     }
 }
 
-pub fn render(self: *Window) void {
+pub fn render(self: *Window, refs: App.AppRefs) void {
     raylib.DrawRectangleLines(self.x - 1, self.y - 1, self.width + 2, self.height + 2, raylib.WHITE);
     raylib.DrawRectangle(self.x, self.y, self.width + 3, self.height + 3, raylib.BLACK);
     raylib.DrawRectangle(self.x, self.y, self.width, self.height, raylib.GRAY);
@@ -114,5 +114,5 @@ pub fn render(self: *Window) void {
         raylib.DrawTriangle(raylib.Vector2{ .x = @floatFromInt(self.width + self.x - 10), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height - 10) }, raylib.WHITE);
     }
 
-    self.layout.render(self.x, self.y);
+    self.layout.render(self.x, self.y, refs);
 }

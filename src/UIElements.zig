@@ -31,7 +31,8 @@ y: i16,
 width: i16,
 height: i16,
 anchor: Anchor,
-content: [64]u8,
+content: [128]u8,
+get_content: *const fn (App.AppRefs) ?[128]u8,
 element_type: ElementType,
 
 pub fn init() UIElement {
@@ -41,7 +42,8 @@ pub fn init() UIElement {
         .width = 0,
         .height = 0,
         .anchor = Anchor.top_left,
-        .content = [64]u8,
+        .content = [128]u8,
+        .get_content = &base_get,
         .element_type = ElementType.text,
     };
 }
@@ -53,7 +55,8 @@ pub fn args_init(x: i16, y: i16, width: i16, height: i16, anchoring: Anchor, con
         .width = width,
         .height = height,
         .anchor = anchoring,
-        .content = [_]u8{undefined} ** 64,
+        .content = [_]u8{undefined} ** 128,
+        .get_content = &base_get,
         .element_type = element_type,
     };
     for (content, 0..) |byte, i| {
@@ -62,7 +65,12 @@ pub fn args_init(x: i16, y: i16, width: i16, height: i16, anchoring: Anchor, con
     return to_ret;
 }
 
-pub fn render(self: *UIElement, parent_x: i32, parent_y: i32) void {
+pub fn base_get(refs: App.AppRefs) ?[128]u8 {
+    _ = refs;
+    return null;
+}
+
+pub fn render(self: *UIElement, parent_x: i32, parent_y: i32, refs: App.AppRefs) void {
     const world_x = parent_x + self.x;
     const world_y = parent_y + self.y;
     switch (self.element_type) {
@@ -70,7 +78,9 @@ pub fn render(self: *UIElement, parent_x: i32, parent_y: i32) void {
             raylib.DrawRectangle(world_x, world_y, self.width, self.height, raylib.DARKGRAY);
         },
         ElementType.text => {
-            raylib.DrawText(&self.content, world_x, world_y, 10, raylib.WHITE);
+            self.content = self.get_content(refs) orelse self.content;
+            std.log.debug("\n{s}", .{&self.content});
+            raylib.DrawText(&self.content, world_x, world_y, self.height, raylib.WHITE);
         },
     }
 }
