@@ -1,9 +1,8 @@
 const std = @import("std");
-const raylib_build = @import("lib/raylib/src/build.zig");
+const raylib_build = @import("libs/raylib/src/build.zig");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
-
     const optimize = b.standardOptimizeOption(.{});
 
     const exe = b.addExecutable(.{
@@ -13,12 +12,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    exe.addIncludePath(.{ .path = "lib/raylib/include" });
-    exe.addLibraryPath(.{ .path = "lib/raylib/lib" });
-    exe.linkSystemLibrary("raylibdll");
+    const raylib = raylib_build.addRaylib(b, target, optimize, .{});
+    if (@TypeOf(raylib) == *std.Build.Step.Compile) {
+        exe.linkLibrary(raylib);
+    }
 
-    b.installFile("lib/raylib/lib/raylib.dll", "bin/raylib.dll");
     b.installArtifact(exe);
+
     const run_cmd = b.addRunArtifact(exe);
     run_cmd.step.dependOn(b.getInstallStep());
     if (b.args) |args| {
