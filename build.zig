@@ -1,5 +1,4 @@
 const std = @import("std");
-const raylib_build = @import("libs/raylib/src/build.zig");
 
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
@@ -12,10 +11,22 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const raylib = raylib_build.addRaylib(b, target, optimize, .{});
-    if (@TypeOf(raylib) == *std.Build.Step.Compile) {
-        exe.linkLibrary(raylib);
-    }
+    const raylib_dep = b.dependency("raylib-zig", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const raylib = raylib_dep.module("raylib"); // main raylib module
+    const raymath = raylib_dep.module("raymath"); // raymath module
+    const rlgl = raylib_dep.module("rlgl"); // rlgl module
+    const raygui = raylib_dep.module("raygui"); // raygui module
+    const raylib_artifact = raylib_dep.artifact("raylib"); // raylib C library
+
+    exe.linkLibrary(raylib_artifact);
+    exe.root_module.addImport("raylib", raylib);
+    exe.root_module.addImport("raymath", raymath);
+    exe.root_module.addImport("rlgl", rlgl);
+    exe.root_module.addImport("raygui", raygui);
 
     b.installArtifact(exe);
 

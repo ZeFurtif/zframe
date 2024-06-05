@@ -2,13 +2,9 @@
     .name = "zframe",
     .version = "0.0.1",
     .dependencies = .{
-        .raylib = .{
-            .url = "https://github.com/raysan5/raylib/archive/5.0.tar.gz",
-            .hash = "1220c28847ca8e8756734ae84355802b764c9d9cf4de057dbc6fc2b15c56e726f27b",
-        },
-        .raygui = .{
-            .url = "https://github.com/raysan5/raygui/archive/4.0.tar.gz",
-            .hash = "1220c28847ca8e8756734ae84355802b764c9d9cf4de057dbc6fc2b15c56e726f27b",
+        .@"raylib-zig" = .{
+            .url = "https://github.com/Not-Nik/raylib-zig/archive/devel.tar.gz",
+            .hash = "1220f169dfdb72038cadcc3c7ccd3dcf6bc79ae62d6b11461d9ab3a890baa6e75163",
         },
     },
     .paths = .{
