@@ -2,9 +2,8 @@ const std = @import("std");
 const expect = std.testing.expect;
 const Allocator = std.mem.Allocator;
 
-const raylib = @cImport({
-    @cInclude("raylib.h");
-});
+const raylib = @import("raylib");
+const raygui = @import("raygui");
 
 const App = @import("App.zig");
 const Canvas = @import("Canvas.zig");
@@ -27,7 +26,7 @@ pub fn main() !void {
     var gui = try Gui.init(alloc);
     defer gui.deinit();
 
-    var camera: raylib.Camera2D = raylib.Camera2D{};
+    var camera = raylib.Camera2D{ .offset = undefined, .rotation = undefined, .target = undefined, .zoom = undefined };
 
     const app_refs: App.AppRefs = .{
         .alloc = alloc,
@@ -42,34 +41,35 @@ pub fn main() !void {
 }
 
 pub fn main_loop(refs: App.AppRefs) !void {
-    raylib.SetConfigFlags(raylib.FLAG_WINDOW_RESIZABLE);
-    raylib.InitWindow(800, 500, "zframe");
-    raylib.MaximizeWindow();
+    const flags = raylib.ConfigFlags{ .window_resizable = true };
+    raylib.setConfigFlags(flags);
+    raylib.initWindow(800, 500, "zframe");
+    raylib.maximizeWindow();
 
     refs.canvas.reset_camera(refs);
     refs.canvas.new_layer(refs);
 
-    //raylib.SetTargetFPS(raylib.GetMonitorRefreshRate(0));
-
-    while (!raylib.WindowShouldClose()) {
+    while (!raylib.windowShouldClose()) {
         {
             refs.gui.update(refs);
             refs.canvas.update(refs);
         }
         {
-            raylib.BeginDrawing();
-            raylib.ClearBackground(raylib.DARKGRAY);
+            raylib.beginDrawing();
+            raylib.clearBackground(raylib.Color.dark_gray);
 
-            raylib.BeginMode2D(refs.camera.*);
+            raylib.beginMode2D(refs.camera.*);
             refs.canvas.render(refs);
-            raylib.EndMode2D();
+            raylib.endMode2D();
 
             refs.gui.render(refs);
 
-            raylib.DrawFPS(10, 10);
+            raylib.drawFPS(10, 10);
 
-            raylib.EndDrawing();
+            _ = raygui.guiMessageBox(raylib.Rectangle{ .x = 85, .y = 70, .width = 250, .height = 100 }, "#191#Message Box", "Hi! This is a message!", "Nice;Cool");
+
+            raylib.endDrawing();
         }
     }
-    raylib.CloseWindow();
+    raylib.closeWindow();
 }

@@ -2,9 +2,7 @@ const std = @import("std");
 const math = std.math;
 const Allocator = std.mem.Allocator;
 
-const raylib = @cImport({
-    @cInclude("raylib.h");
-});
+const raylib = @import("raylib");
 
 const App = @import("App.zig");
 const Layer = @import("Layer.zig");
