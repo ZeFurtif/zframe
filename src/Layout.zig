@@ -12,6 +12,7 @@ const ElementType = UIElement.ElementType;
 pub const LayoutType = enum {
     default,
     history,
+    color,
     timeline,
     onion_skin,
 };
@@ -41,19 +42,22 @@ pub fn fillLayout(self: *Layout, window_type: LayoutType) void {
     switch (window_type) {
         LayoutType.default => {},
         LayoutType.history => {
-            self.addElement(10, 5, 100, 30, UIElement.Anchor.top_left, "History", ElementType.text);
-            self.addElement(20, 40, 100, 20, UIElement.Anchor.top_left, "", ElementType.text);
+            self.addElement(5, 0, 100, 30, UIElement.Anchor.top_left, "History", ElementType.text);
+            self.addElement(20, 20, 20, 20, UIElement.Anchor.fill, "", ElementType.text);
             self.ui_elements.items[1].get_content = &Gui.get_action_history_string;
+        },
+        LayoutType.color => {
+            self.addElement(15, 40, 55, 60, UIElement.Anchor.fill, "Color", ElementType.color_picker);
         },
         LayoutType.timeline => {},
         LayoutType.onion_skin => {},
     }
 }
 
-pub fn render(self: *Layout, parent_x: i32, parent_y: i32, refs: App.AppRefs) void {
+pub fn render(self: *Layout, parent_x: i32, parent_y: i32, parent_width: i32, parent_height: i32, refs: App.AppRefs) void {
     var i: usize = 0;
     while (i != self.ui_elements.items.len) {
-        self.ui_elements.items[i].render(parent_x, parent_y, refs);
+        self.ui_elements.items[i].render(parent_x, parent_y, parent_width, parent_height, refs);
         i += 1;
     }
 }

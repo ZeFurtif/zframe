@@ -8,6 +8,7 @@ const raygui = @import("raygui");
 const App = @import("App.zig");
 const Canvas = @import("Canvas.zig");
 const Gui = @import("Gui.zig");
+const Toolbox = @import("Toolbox.zig");
 const UserAction = Gui.UserAction;
 
 pub fn main() !void {
@@ -26,6 +27,9 @@ pub fn main() !void {
     var gui = try Gui.init(alloc);
     defer gui.deinit();
 
+    var toolbox = Toolbox.init();
+    defer toolbox.deinit();
+
     var camera = raylib.Camera2D{ .offset = undefined, .rotation = undefined, .target = undefined, .zoom = undefined };
 
     const app_refs: App.AppRefs = .{
@@ -33,6 +37,7 @@ pub fn main() !void {
         .canvas = &canvas,
         .gui = &gui,
         .camera = &camera,
+        .toolbox = &toolbox,
     };
 
     //try main_loop(app_refs);
@@ -66,7 +71,7 @@ pub fn main_loop(refs: App.AppRefs) !void {
 
             raylib.drawFPS(10, 10);
 
-            _ = raygui.guiMessageBox(raylib.Rectangle{ .x = 85, .y = 70, .width = 250, .height = 100 }, "#191#Message Box", "Hi! This is a message!", "Nice;Cool");
+            _ = raygui.guiMessageBox(raylib.Rectangle{ .x = 85, .y = 70, .width = 250, .height = 500 }, "#191#Message Box", "Hi! This is a message!", "Nice;Cool");
 
             raylib.endDrawing();
         }

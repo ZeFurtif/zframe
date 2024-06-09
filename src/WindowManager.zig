@@ -71,6 +71,10 @@ pub fn update(self: *WindowManager, refs: App.AppRefs) void {
         self.spawn_window(refs, LayoutType.history);
         return;
     }
+    if (cur_action == UserAction.window_spawn_colorpicker) {
+        self.spawn_window(refs, LayoutType.color);
+        return;
+    }
     if (cur_action == UserAction.window_spawn_timeline) {
         self.spawn_window(refs, LayoutType.timeline);
         return;
@@ -93,6 +97,9 @@ pub fn render(self: *WindowManager, refs: App.AppRefs) void {
     var i = self.windows.items.len;
     while (i != 0) {
         i -= 1;
-        self.windows.items[i].render(refs);
+        if (self.windows.items[i].render(refs) != 0) {
+            self.windows.items[i].deinit();
+            _ = self.windows.orderedRemove(i);
+        }
     }
 }

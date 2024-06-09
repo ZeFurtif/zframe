@@ -20,6 +20,7 @@ pub const UserAction = enum {
     window_spawn,
     window_spawn_history,
     window_spawn_timeline,
+    window_spawn_colorpicker,
 };
 
 const Gui = @This();
@@ -47,48 +48,52 @@ pub fn update(self: *Gui, refs: App.AppRefs) void {
 }
 
 pub fn update_action(self: *Gui) void {
-    if (raylib.IsKeyDown(raylib.KEY_LEFT_CONTROL)) {
-        if (raylib.IsKeyPressed(raylib.KEY_N)) {
+    if (raylib.isKeyDown(raylib.KeyboardKey.key_left_control)) {
+        if (raylib.isKeyPressed(raylib.KeyboardKey.key_n)) {
             self.current_user_action = UserAction.window_spawn;
             return;
         }
-        if (raylib.IsKeyPressed(raylib.KEY_R)) {
+        if (raylib.isKeyPressed(raylib.KeyboardKey.key_r)) {
             self.current_user_action = UserAction.canvas_reset_transform;
             return;
         }
-        if (raylib.IsKeyPressed(raylib.KEY_H)) {
+        if (raylib.isKeyPressed(raylib.KeyboardKey.key_h)) {
             self.current_user_action = UserAction.window_spawn_history;
             return;
         }
-        if (raylib.IsKeyPressed(raylib.KEY_T)) {
+        if (raylib.isKeyPressed(raylib.KeyboardKey.key_t)) {
             self.current_user_action = UserAction.window_spawn_timeline;
             return;
         }
-        if (raylib.IsKeyPressed(raylib.KEY_Z)) {
+        if (raylib.isKeyPressed(raylib.KeyboardKey.key_c)) {
+            self.current_user_action = UserAction.window_spawn_colorpicker;
+            return;
+        }
+        if (raylib.isKeyPressed(raylib.KeyboardKey.key_z)) {
             self.current_user_action = UserAction.window_kill;
             return;
         }
-        if (raylib.IsKeyPressed(raylib.KEY_W)) {
+        if (raylib.isKeyPressed(raylib.KeyboardKey.key_w)) {
             self.current_user_action = UserAction.canvas_undo;
             return;
         }
-        if (raylib.IsKeyPressed(raylib.KEY_S)) {
+        if (raylib.isKeyPressed(raylib.KeyboardKey.key_s)) {
             self.current_user_action = UserAction.canvas_save;
             return;
         }
     }
-    if (raylib.IsKeyDown(raylib.KEY_SPACE)) {
-        if (raylib.IsMouseButtonDown(raylib.MOUSE_BUTTON_LEFT)) {
+    if (raylib.isKeyDown(raylib.KeyboardKey.key_space)) {
+        if (raylib.isMouseButtonDown(raylib.MouseButton.mouse_button_left)) {
             self.current_user_action = UserAction.canvas_move;
             return;
         }
     }
-    if (raylib.GetMouseWheelMove() != 0) {
+    if (raylib.getMouseWheelMove() != 0) {
         self.current_user_action = UserAction.canvas_scale;
         return;
     }
 
-    if (raylib.IsMouseButtonDown(raylib.MOUSE_BUTTON_LEFT)) {
+    if (raylib.isMouseButtonDown(raylib.MouseButton.mouse_button_left)) {
         self.current_user_action = UserAction.interact;
         return;
     }

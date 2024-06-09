@@ -3,6 +3,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 const raylib = @import("raylib");
+const raygui = @import("raygui");
 
 const App = @import("App.zig");
 const Layout = @import("Layout.zig");
@@ -51,14 +52,14 @@ pub fn args_init(refs: App.AppRefs, x: i32, y: i32, width: i32, height: i32) !Wi
 }
 
 pub fn is_mouse_inside(self: *Window) bool {
-    const mouse_x = raylib.GetMouseX();
-    const mouse_y = raylib.GetMouseY();
+    const mouse_x = raylib.getMouseX();
+    const mouse_y = raylib.getMouseY();
     return mouse_x >= self.x and mouse_x <= self.x + self.width and mouse_y >= self.y and mouse_y <= self.y + self.height;
 }
 
 pub fn is_mouse_on_resize_area(self: *Window) bool {
-    const mouse_x = raylib.GetMouseX();
-    const mouse_y = raylib.GetMouseY();
+    const mouse_x = raylib.getMouseX();
+    const mouse_y = raylib.getMouseY();
     return mouse_x - self.x > self.width - 15 and mouse_y - self.y > self.height - 15;
 }
 
@@ -71,8 +72,8 @@ pub fn interact(self: *Window, refs: App.AppRefs) void {
             }
             if (!(self.window_state.is_scaling or self.window_state.is_moving)) {
                 self.window_state.is_moving = true;
-                self.window_state.mouse_offset_x = raylib.GetMouseX() - self.x;
-                self.window_state.mouse_offset_y = raylib.GetMouseY() - self.y;
+                self.window_state.mouse_offset_x = raylib.getMouseX() - self.x;
+                self.window_state.mouse_offset_y = raylib.getMouseY() - self.y;
             }
         }
         if (self.window_state.is_scaling or self.window_state.is_moving) {
@@ -81,7 +82,7 @@ pub fn interact(self: *Window, refs: App.AppRefs) void {
     }
 
     if (cur_action == UserAction.none) {
-        raylib.SetMouseCursor(raylib.MOUSE_CURSOR_DEFAULT);
+        raylib.setMouseCursor(0);
         self.window_state.is_scaling = false;
         self.window_state.is_moving = false;
     }
@@ -90,27 +91,30 @@ pub fn interact(self: *Window, refs: App.AppRefs) void {
 pub fn update(self: *Window, refs: App.AppRefs) void {
     self.interact(refs);
     if (self.window_state.is_scaling) {
-        self.width = raylib.GetMouseX() - self.x;
-        self.height = raylib.GetMouseY() - self.y;
-        self.width = math.clamp(self.width, 100, raylib.GetScreenWidth() - self.x);
-        self.height = math.clamp(self.height, 100, raylib.GetScreenHeight() - self.y);
+        self.width = raylib.getMouseX() - self.x;
+        self.height = raylib.getMouseY() - self.y;
+        self.width = math.clamp(self.width, 100, raylib.getScreenWidth() - self.x);
+        self.height = math.clamp(self.height, 100, raylib.getScreenHeight() - self.y);
     }
     if (self.window_state.is_moving) {
-        self.x = raylib.GetMouseX() - self.window_state.mouse_offset_x;
-        self.y = raylib.GetMouseY() - self.window_state.mouse_offset_y;
-        self.x = math.clamp(self.x, 0, raylib.GetScreenWidth() - self.width);
-        self.y = math.clamp(self.y, 0, raylib.GetScreenHeight() - self.height);
+        self.x = raylib.getMouseX() - self.window_state.mouse_offset_x;
+        self.y = raylib.getMouseY() - self.window_state.mouse_offset_y;
+        self.x = math.clamp(self.x, 0, raylib.getScreenWidth() - self.width);
+        self.y = math.clamp(self.y, 0, raylib.getScreenHeight() - self.height);
     }
 }
 
-pub fn render(self: *Window, refs: App.AppRefs) void {
-    raylib.DrawRectangleLines(self.x - 1, self.y - 1, self.width + 2, self.height + 2, raylib.WHITE);
-    raylib.DrawRectangle(self.x, self.y, self.width + 3, self.height + 3, raylib.BLACK);
-    raylib.DrawRectangle(self.x, self.y, self.width, self.height, raylib.GRAY);
+pub fn render(self: *Window, refs: App.AppRefs) i32 {
+    //raylib.drawRectangleLines(self.x - 1, self.y - 1, self.width + 2, self.height + 2, raylib.Color.white);
+    //raylib.drawRectangle(self.x, self.y, self.width + 3, self.height + 3, raylib.Color.black);
+    //raylib.drawRectangle(self.x, self.y, self.width, self.height, raylib.Color.gray);
+    const result = raygui.guiWindowBox(raylib.Rectangle{ .x = @floatFromInt(self.x), .y = @floatFromInt(self.y), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) }, "");
 
     if ((self.is_mouse_inside() and self.is_mouse_on_resize_area()) or self.window_state.is_scaling) {
-        raylib.DrawTriangle(raylib.Vector2{ .x = @floatFromInt(self.width + self.x - 10), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height - 10) }, raylib.WHITE);
+        raylib.drawTriangle(raylib.Vector2{ .x = @floatFromInt(self.width + self.x - 10), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height - 10) }, raylib.Color.white);
     }
 
-    self.layout.render(self.x, self.y, refs);
+    self.layout.render(self.x, self.y, self.width, self.height, refs);
+
+    return result;
 }

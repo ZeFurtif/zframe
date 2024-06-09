@@ -61,8 +61,8 @@ pub fn reset_camera(self: *Canvas, refs: App.AppRefs) void {
         .y = @floatFromInt((@divTrunc(self.height, 2))),
     };
     refs.camera.offset = raylib.Vector2{
-        .x = @floatFromInt(@divTrunc(raylib.GetScreenWidth(), 2)),
-        .y = @floatFromInt(@divTrunc(raylib.GetScreenHeight(), 2)),
+        .x = @floatFromInt(@divTrunc(raylib.getScreenWidth(), 2)),
+        .y = @floatFromInt(@divTrunc(raylib.getScreenHeight(), 2)),
     };
     refs.camera.rotation = 0;
     refs.camera.zoom = 0.5;
@@ -82,8 +82,8 @@ pub fn new_layer(self: *Canvas, refs: App.AppRefs) void {
 pub fn update(self: *Canvas, refs: App.AppRefs) void {
     self.interact(refs);
     if (self.canvas_state.is_dragged) {
-        const cam_offset_x = @as(f32, @floatFromInt(raylib.GetMouseX() - self.canvas_state.mouse_offset_x));
-        const cam_offset_y = @as(f32, @floatFromInt(raylib.GetMouseY() - self.canvas_state.mouse_offset_y));
+        const cam_offset_x = @as(f32, @floatFromInt(raylib.getMouseX() - self.canvas_state.mouse_offset_x));
+        const cam_offset_y = @as(f32, @floatFromInt(raylib.getMouseY() - self.canvas_state.mouse_offset_y));
         refs.camera.target.x = self.canvas_state.saved_camera_x - (cam_offset_x / refs.camera.zoom);
         refs.camera.target.y = self.canvas_state.saved_camera_y - (cam_offset_y / refs.camera.zoom);
     }
@@ -92,13 +92,13 @@ pub fn update(self: *Canvas, refs: App.AppRefs) void {
 pub fn interact(self: *Canvas, refs: App.AppRefs) void {
     const cur_action = refs.gui.get_action();
 
-    const world_mouse_pos = raylib.GetScreenToWorld2D(raylib.GetMousePosition(), refs.camera.*);
+    const world_mouse_pos = raylib.getScreenToWorld2D(raylib.getMousePosition(), refs.camera.*);
     if (cur_action == UserAction.canvas_save) {
-        const image = &raylib.LoadImageFromTexture(self.layers.items[self.selected_layer_id].frames.items[self.current_frame].target.texture);
+        const image = &raylib.loadImageFromTexture(self.layers.items[self.selected_layer_id].frames.items[self.current_frame].target.texture);
         std.log.debug("{any}", .{image});
-        raylib.ImageFlipVertical(@constCast(image));
-        _ = raylib.ExportImage(image.*, "my_amazing_painting.png");
-        raylib.UnloadImage(image.*);
+        raylib.imageFlipVertical(@constCast(image));
+        _ = raylib.exportImage(image.*, "my_amazing_painting.png");
+        raylib.unloadImage(image.*);
         std.log.debug("{any}", .{@TypeOf(image.*)});
         std.log.debug("SAVED", .{});
     }
@@ -109,25 +109,25 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
     }
 
     if (cur_action == UserAction.canvas_move) {
-        raylib.SetMouseCursor(raylib.MOUSE_CURSOR_RESIZE_ALL);
+        raylib.setMouseCursor(9);
         if (!self.canvas_state.is_dragged) {
             self.canvas_state.is_dragged = true;
-            self.canvas_state.mouse_offset_x = raylib.GetMouseX();
-            self.canvas_state.mouse_offset_y = raylib.GetMouseY();
+            self.canvas_state.mouse_offset_x = raylib.getMouseX();
+            self.canvas_state.mouse_offset_y = raylib.getMouseY();
             self.canvas_state.saved_camera_x = refs.camera.target.x;
             self.canvas_state.saved_camera_y = refs.camera.target.y;
         }
         return;
     }
     if (cur_action == UserAction.canvas_scale) {
-        refs.camera.zoom += (raylib.GetMouseWheelMove() * 0.1 * refs.camera.zoom);
+        refs.camera.zoom += (raylib.getMouseWheelMove() * 0.1 * refs.camera.zoom);
         refs.camera.zoom = math.clamp(refs.camera.zoom, 0.05, 5);
         return;
     }
     if (cur_action == UserAction.interact and self.is_mouse_inside(world_mouse_pos) and self.layers.items.len > 0) {
         self.canvas_state.draw_x = @divTrunc((self.canvas_state.draw_x * 3 + world_mouse_pos.x), 4);
         self.canvas_state.draw_y = @divTrunc((self.canvas_state.draw_y * 3 + world_mouse_pos.y), 4);
-        self.layers.items[self.selected_layer_id].frames.items[self.current_frame].draw(@intFromFloat(self.canvas_state.draw_x), @intFromFloat(self.canvas_state.draw_y));
+        self.layers.items[self.selected_layer_id].frames.items[self.current_frame].draw(@intFromFloat(self.canvas_state.draw_x), @intFromFloat(self.canvas_state.draw_y), refs);
         return;
     }
     if (cur_action == UserAction.none) {
@@ -135,11 +135,11 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
         self.canvas_state.draw_y = world_mouse_pos.y;
     }
     self.canvas_state.is_dragged = false;
-    raylib.SetMouseCursor(raylib.MOUSE_CURSOR_DEFAULT);
+    raylib.setMouseCursor(0);
 }
 
 pub fn render(self: *Canvas, refs: App.AppRefs) void {
-    raylib.DrawRectangle(@intFromFloat(self.rect.x), @intFromFloat(self.rect.y), @intFromFloat(self.rect.width), @intFromFloat(-self.rect.height), raylib.WHITE);
+    raylib.drawRectangle(@intFromFloat(self.rect.x), @intFromFloat(self.rect.y), @intFromFloat(self.rect.width), @intFromFloat(-self.rect.height), raylib.Color.white);
     var i: usize = 0;
     while (i < self.layers.items.len) {
         if (self.layers.items[i].active) {
