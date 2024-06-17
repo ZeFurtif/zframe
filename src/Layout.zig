@@ -42,12 +42,11 @@ pub fn fillLayout(self: *Layout, window_type: LayoutType) void {
     switch (window_type) {
         LayoutType.default => {},
         LayoutType.history => {
-            self.addElement(5, 0, 100, 30, UIElement.Anchor.top_left, "History", ElementType.text);
             self.addElement(20, 20, 20, 20, UIElement.Anchor.fill, "", ElementType.text);
-            self.ui_elements.items[1].get_content = &Gui.get_action_history_string;
+            self.ui_elements.items[0].get_content = &Gui.get_action_history_string;
         },
         LayoutType.color => {
-            self.addElement(15, 40, 55, 60, UIElement.Anchor.fill, "Color", ElementType.color_picker);
+            self.addElement(15, 15, 55, 25, UIElement.Anchor.fill, "Color", ElementType.color_picker);
         },
         LayoutType.timeline => {},
         LayoutType.onion_skin => {},

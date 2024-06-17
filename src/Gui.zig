@@ -8,6 +8,7 @@ const App = @import("App.zig");
 
 pub const UserAction = enum {
     none,
+    start,
     interact,
     canvas_move,
     canvas_scale,
@@ -103,22 +104,23 @@ pub fn update_action(self: *Gui) void {
 
 pub fn update_history(self: *Gui) void {
     if (self.history.items.len == 0) {
-        if (self.history.append(self.current_user_action)) |stmt| {
+        if (self.history.append(UserAction.start)) |stmt| {
             _ = stmt;
         } else |e| {
             std.log.debug("{any}", .{e});
         }
     }
-    if (self.history.items[0] != self.current_user_action) {
-        if (self.history.insert(0, self.current_user_action)) |stmt| {
-            _ = stmt;
-        } else |e| {
-            std.log.debug("{any}", .{e});
+    if (self.current_user_action != UserAction.none) {
+        if (self.history.items[self.history.items.len - 1] != self.current_user_action) {
+            if (self.history.append(self.current_user_action)) |stmt| {
+                _ = stmt;
+            } else |e| {
+                std.log.debug("{any}", .{e});
+            }
         }
     }
-
     if (self.history.items.len > 10) {
-        _ = self.history.pop();
+        _ = self.history.orderedRemove(0);
     }
 }
 

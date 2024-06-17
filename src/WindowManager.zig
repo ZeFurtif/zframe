@@ -35,8 +35,8 @@ pub fn bring_to_top(self: *WindowManager, id: usize) void {
     }
 }
 
-pub fn spawn_window(self: *WindowManager, refs: App.AppRefs, layout_type: LayoutType) void {
-    var new_window = try Window.args_init(refs, 1500, 100, 300, 250);
+pub fn spawn_window(self: *WindowManager, title: []const u8, refs: App.AppRefs, layout_type: LayoutType) void {
+    var new_window = try Window.args_init(refs, title, 1500, 100, 300, 250);
 
     new_window.layout.fillLayout(layout_type);
 
@@ -64,19 +64,19 @@ pub fn update(self: *WindowManager, refs: App.AppRefs) void {
         return;
     }
     if (cur_action == UserAction.window_spawn) {
-        self.spawn_window(refs, LayoutType.default);
+        self.spawn_window("Window", refs, LayoutType.default);
         return;
     }
     if (cur_action == UserAction.window_spawn_history) {
-        self.spawn_window(refs, LayoutType.history);
+        self.spawn_window("History", refs, LayoutType.history);
         return;
     }
     if (cur_action == UserAction.window_spawn_colorpicker) {
-        self.spawn_window(refs, LayoutType.color);
+        self.spawn_window("Color Picker", refs, LayoutType.color);
         return;
     }
     if (cur_action == UserAction.window_spawn_timeline) {
-        self.spawn_window(refs, LayoutType.timeline);
+        self.spawn_window("Timeline", refs, LayoutType.timeline);
         return;
     }
 

@@ -71,8 +71,6 @@ pub fn main_loop(refs: App.AppRefs) !void {
 
             raylib.drawFPS(10, 10);
 
-            _ = raygui.guiMessageBox(raylib.Rectangle{ .x = 85, .y = 70, .width = 250, .height = 500 }, "#191#Message Box", "Hi! This is a message!", "Nice;Cool");
-
             raylib.endDrawing();
         }
     }

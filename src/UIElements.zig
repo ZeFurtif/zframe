@@ -72,36 +72,37 @@ pub fn base_get(refs: App.AppRefs) ?[128]u8 {
 }
 
 pub fn buildRec(self: *UIElement, parent_x: i32, parent_y: i32, parent_width: i32, parent_height: i32) raylib.Rectangle {
+    const navbar_height = 22;
     switch (self.anchor) {
         Anchor.top_left => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.top_center => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2)), .y = @floatFromInt(parent_y + self.y), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2)), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.top_right => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + parent_width), .y = @floatFromInt(parent_y + self.y), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + parent_width), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.middle_left => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2)), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2) + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.middle_center => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2)), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2)), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2)), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2) + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.middle_right => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + parent_width), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2)), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + parent_width), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2) + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.bottom_left => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + parent_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + parent_height + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.bottom_center => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2)), .y = @floatFromInt(parent_y + self.y + parent_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2)), .y = @floatFromInt(parent_y + self.y + parent_height + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.bottom_right => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + parent_width), .y = @floatFromInt(parent_y + self.y + parent_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + parent_width), .y = @floatFromInt(parent_y + self.y + parent_height + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.fill => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y), .width = @floatFromInt(parent_width - self.width), .height = @floatFromInt(parent_height - self.height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(parent_width - self.width), .height = @floatFromInt(parent_height - self.height - navbar_height) };
         },
     }
 }

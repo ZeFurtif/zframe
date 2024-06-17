@@ -9,7 +9,7 @@ current_color: raylib.Color,
 
 pub fn init() Toolbox {
     return .{
-        .current_color = raylib.Color.white,
+        .current_color = raylib.Color.black,
     };
 }
 

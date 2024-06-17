@@ -18,6 +18,7 @@ pub const WindowState = struct {
 };
 
 const Window = @This();
+title: [32]u8,
 x: i32,
 y: i32,
 width: i32,
@@ -27,6 +28,7 @@ layout: Layout,
 
 pub fn init(refs: App.AppRefs) !Window {
     return .{
+        .title = "Window",
         .x = 0,
         .y = 0,
         .width = 100,
@@ -40,8 +42,9 @@ pub fn deinit(self: *Window) void {
     self.layout.deinit();
 }
 
-pub fn args_init(refs: App.AppRefs, x: i32, y: i32, width: i32, height: i32) !Window {
-    return .{
+pub fn args_init(refs: App.AppRefs, title: []const u8, x: i32, y: i32, width: i32, height: i32) !Window {
+    var to_return: Window = .{
+        .title = [_]u8{undefined} ** 32,
         .x = x,
         .y = y,
         .width = width,
@@ -49,6 +52,10 @@ pub fn args_init(refs: App.AppRefs, x: i32, y: i32, width: i32, height: i32) !Wi
         .window_state = WindowState{},
         .layout = Layout.init(refs),
     };
+    for (title, 0..) |byte, i| {
+        to_return.title[i] = byte;
+    }
+    return to_return;
 }
 
 pub fn is_mouse_inside(self: *Window) bool {
@@ -105,10 +112,7 @@ pub fn update(self: *Window, refs: App.AppRefs) void {
 }
 
 pub fn render(self: *Window, refs: App.AppRefs) i32 {
-    //raylib.drawRectangleLines(self.x - 1, self.y - 1, self.width + 2, self.height + 2, raylib.Color.white);
-    //raylib.drawRectangle(self.x, self.y, self.width + 3, self.height + 3, raylib.Color.black);
-    //raylib.drawRectangle(self.x, self.y, self.width, self.height, raylib.Color.gray);
-    const result = raygui.guiWindowBox(raylib.Rectangle{ .x = @floatFromInt(self.x), .y = @floatFromInt(self.y), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) }, "");
+    const result = raygui.guiWindowBox(raylib.Rectangle{ .x = @floatFromInt(self.x), .y = @floatFromInt(self.y), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) }, self.title[0 .. self.title.len - 1 :0]);
 
     if ((self.is_mouse_inside() and self.is_mouse_on_resize_area()) or self.window_state.is_scaling) {
         raylib.drawTriangle(raylib.Vector2{ .x = @floatFromInt(self.width + self.x - 10), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height - 10) }, raylib.Color.white);
