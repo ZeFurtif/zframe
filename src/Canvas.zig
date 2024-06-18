@@ -8,7 +8,12 @@ const App = @import("App.zig");
 const Layer = @import("Layer.zig");
 const UserAction = @import("Gui.zig").UserAction;
 
+const utilty = @import("Utility.zig");
+
 pub const CanvasState = struct {
+    is_playing: bool = false,
+    looping_enabled: bool = true,
+    elapsed: f32 = 0,
     is_dragged: bool = false,
     mouse_offset_x: i32 = 0,
     mouse_offset_y: i32 = 0,
@@ -16,6 +21,12 @@ pub const CanvasState = struct {
     saved_camera_y: f32 = 0,
     draw_x: f32 = 0,
     draw_y: f32 = 0,
+};
+
+pub const SequenceSettings = struct {
+    start: usize = 0,
+    end: usize = 128,
+    framerate: f32 = 24.0,
 };
 
 const Canvas = @This();
@@ -26,6 +37,7 @@ layers: std.ArrayList(Layer),
 selected_layer_id: usize,
 current_frame: usize,
 canvas_state: CanvasState,
+sequenceSettings: SequenceSettings,
 
 pub fn init(alloc: Allocator) !Canvas {
     return .{
@@ -41,6 +53,7 @@ pub fn init(alloc: Allocator) !Canvas {
         .selected_layer_id = 0,
         .current_frame = 0,
         .canvas_state = CanvasState{},
+        .sequenceSettings = SequenceSettings{},
     };
 }
 
@@ -79,6 +92,50 @@ pub fn new_layer(self: *Canvas, refs: App.AppRefs) void {
     }
 }
 
+pub fn play(refs: App.AppRefs) void {
+    refs.canvas.canvas_state.is_playing = !refs.canvas.canvas_state.is_playing;
+}
+
+pub fn go_to_prev_frame(refs: App.AppRefs) void {
+    if (refs.canvas.current_frame > refs.canvas.sequenceSettings.start) {
+        refs.canvas.current_frame -= 1;
+    }
+}
+
+pub fn go_to_next_frame(refs: App.AppRefs) void {
+    if (refs.canvas.current_frame < refs.canvas.sequenceSettings.end) {
+        refs.canvas.current_frame += 1;
+    }
+}
+
+pub fn get_full_len(refs: App.AppRefs) usize {
+    var ret: usize = 0;
+    for (refs.canvas.layers.items[refs.canvas.selected_layer_id].frames.items) |frame| {
+        ret += frame.exposure;
+    }
+    return ret;
+}
+
+pub fn check_frame_overflow(refs: App.AppRefs) bool {
+    return (refs.canvas.current_frame > refs.canvas.sequenceSettings.start and refs.canvas.current_frame < refs.canvas.sequenceSettings.end);
+}
+
+pub fn get_current_frame_string(refs: App.AppRefs) ?[128]u8 {
+    var ret_str = [_]u8{0} ** 128;
+    var cnt: usize = 0;
+    for ("frame: ") |char| {
+        ret_str[cnt] = char;
+        cnt += 1;
+    }
+    var buf: [20]u8 = undefined;
+    const str = utilty.intToString(refs.canvas.current_frame, &buf) catch unreachable;
+    for (str) |char| {
+        ret_str[cnt] = char;
+        cnt += 1;
+    }
+    return ret_str;
+}
+
 pub fn update(self: *Canvas, refs: App.AppRefs) void {
     self.interact(refs);
     if (self.canvas_state.is_dragged) {
@@ -86,6 +143,22 @@ pub fn update(self: *Canvas, refs: App.AppRefs) void {
         const cam_offset_y = @as(f32, @floatFromInt(raylib.getMouseY() - self.canvas_state.mouse_offset_y));
         refs.camera.target.x = self.canvas_state.saved_camera_x - (cam_offset_x / refs.camera.zoom);
         refs.camera.target.y = self.canvas_state.saved_camera_y - (cam_offset_y / refs.camera.zoom);
+    }
+
+    if (self.canvas_state.is_playing) {
+        self.canvas_state.elapsed += raylib.getFrameTime();
+        if (self.canvas_state.elapsed > 1 / self.sequenceSettings.framerate) {
+            self.canvas_state.elapsed -= 1 / self.sequenceSettings.framerate;
+            self.current_frame += 1;
+            if (!check_frame_overflow(refs)) {
+                if (self.canvas_state.looping_enabled) {
+                    self.current_frame = 0;
+                    return;
+                }
+                self.current_frame -= 1;
+                self.canvas_state.is_playing = false;
+            }
+        }
     }
 }
 

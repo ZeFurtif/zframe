@@ -6,6 +6,7 @@ const raylib = @import("raylib");
 
 const App = @import("App.zig");
 const Gui = @import("Gui.zig");
+const Canvas = @import("Canvas.zig");
 const UIElement = @import("UIElements.zig");
 const ElementType = UIElement.ElementType;
 
@@ -48,7 +49,18 @@ pub fn fillLayout(self: *Layout, window_type: LayoutType) void {
         LayoutType.color => {
             self.addElement(15, 15, 55, 25, UIElement.Anchor.fill, "Color", ElementType.color_picker);
         },
-        LayoutType.timeline => {},
+        LayoutType.timeline => {
+            self.addElement(0, 5, 60, 50, UIElement.Anchor.top_center, "frame: 0", ElementType.text);
+            self.addElement(15, 30, 50, 50, UIElement.Anchor.top_left, "Prev", ElementType.button);
+            self.addElement(15, 30, 50, 50, UIElement.Anchor.top_right, "Next", ElementType.button);
+
+            self.ui_elements.items[0].get_content = &Canvas.get_current_frame_string;
+            self.ui_elements.items[1].on_interact = &Canvas.go_to_prev_frame;
+            self.ui_elements.items[2].on_interact = &Canvas.go_to_next_frame;
+
+            self.addElement(0, 30, 50, 50, UIElement.Anchor.top_center, "Play", ElementType.button);
+            self.ui_elements.items[3].on_interact = &Canvas.play;
+        },
         LayoutType.onion_skin => {},
     }
 }

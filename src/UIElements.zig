@@ -35,6 +35,7 @@ anchor: Anchor,
 content: [128]u8,
 get_content: *const fn (App.AppRefs) ?[128]u8,
 element_type: ElementType,
+on_interact: *const fn (App.AppRefs) void,
 
 pub fn init() UIElement {
     return .{
@@ -46,6 +47,7 @@ pub fn init() UIElement {
         .content = [128]u8,
         .get_content = &base_get,
         .element_type = ElementType.text,
+        .on_interact = &base_interact,
     };
 }
 
@@ -59,6 +61,7 @@ pub fn args_init(x: i16, y: i16, width: i16, height: i16, anchoring: Anchor, con
         .content = [_]u8{undefined} ** 128,
         .get_content = &base_get,
         .element_type = element_type,
+        .on_interact = &base_interact,
     };
     for (content, 0..) |byte, i| {
         to_ret.content[i] = byte;
@@ -71,6 +74,11 @@ pub fn base_get(refs: App.AppRefs) ?[128]u8 {
     return null;
 }
 
+pub fn base_interact(refs: App.AppRefs) void {
+    _ = refs;
+    return;
+}
+
 pub fn buildRec(self: *UIElement, parent_x: i32, parent_y: i32, parent_width: i32, parent_height: i32) raylib.Rectangle {
     const navbar_height = 22;
     switch (self.anchor) {
@@ -78,28 +86,28 @@ pub fn buildRec(self: *UIElement, parent_x: i32, parent_y: i32, parent_width: i3
             return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.top_center => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2)), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2) - @divFloor(self.width, 2)), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.top_right => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + parent_width), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x - self.x + parent_width - self.width), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.middle_left => {
             return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2) + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.middle_center => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2)), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2) + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2) - @divFloor(self.width, 2)), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2) + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.middle_right => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + parent_width), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2) + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x - self.x + parent_width - self.width), .y = @floatFromInt(parent_y + self.y + @divTrunc(parent_height, 2) + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.bottom_left => {
             return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + parent_height + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.bottom_center => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2)), .y = @floatFromInt(parent_y + self.y + parent_height + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + @divFloor(parent_width, 2) - @divFloor(self.width, 2)), .y = @floatFromInt(parent_y + self.y + parent_height + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.bottom_right => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x + parent_width), .y = @floatFromInt(parent_y + self.y + parent_height + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x - self.x + parent_width - self.width), .y = @floatFromInt(parent_y + self.y + parent_height + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.fill => {
             return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(parent_width - self.width), .height = @floatFromInt(parent_height - self.height - navbar_height) };
@@ -115,7 +123,9 @@ pub fn render(self: *UIElement, parent_x: i32, parent_y: i32, parent_width: i32,
 
     switch (self.element_type) {
         ElementType.button => {
-            _ = raygui.guiButton(rec, content);
+            if (raygui.guiButton(rec, content) != 0) {
+                self.on_interact(refs);
+            }
         },
         ElementType.text => {
             _ = raygui.guiLabel(rec, content);
