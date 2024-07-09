@@ -116,6 +116,18 @@ pub fn get_full_len(refs: App.AppRefs) usize {
     return ret;
 }
 
+pub fn extend_exposure(refs: App.AppRefs) void {
+    const frame_id = refs.canvas.layers.items[refs.canvas.selected_layer_id].get_current_frame_index(refs.canvas.current_frame) orelse return;
+    refs.canvas.layers.items[refs.canvas.selected_layer_id].frames.items[frame_id].exposure += 1;
+}
+
+pub fn reduce_exposure(refs: App.AppRefs) void {
+    const frame_id = refs.canvas.layers.items[refs.canvas.selected_layer_id].get_current_frame_index(refs.canvas.current_frame) orelse return;
+    if (refs.canvas.layers.items[refs.canvas.selected_layer_id].frames.items[frame_id].exposure > 1) {
+        refs.canvas.layers.items[refs.canvas.selected_layer_id].frames.items[frame_id].exposure -= 1;
+    }
+}
+
 pub fn check_frame_overflow(refs: App.AppRefs) bool {
     return (refs.canvas.current_frame > refs.canvas.sequenceSettings.start and refs.canvas.current_frame < refs.canvas.sequenceSettings.end);
 }
@@ -198,9 +210,10 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
         return;
     }
     if (cur_action == UserAction.interact and self.is_mouse_inside(world_mouse_pos) and self.layers.items.len > 0) {
+        const frame_id = refs.canvas.layers.items[refs.canvas.selected_layer_id].get_current_frame_index(refs.canvas.current_frame) orelse return;
         self.canvas_state.draw_x = @divTrunc((self.canvas_state.draw_x * 3 + world_mouse_pos.x), 4);
         self.canvas_state.draw_y = @divTrunc((self.canvas_state.draw_y * 3 + world_mouse_pos.y), 4);
-        self.layers.items[self.selected_layer_id].frames.items[self.current_frame].draw(@intFromFloat(self.canvas_state.draw_x), @intFromFloat(self.canvas_state.draw_y), refs);
+        self.layers.items[self.selected_layer_id].frames.items[frame_id].draw(@intFromFloat(self.canvas_state.draw_x), @intFromFloat(self.canvas_state.draw_y), refs);
         return;
     }
     if (cur_action == UserAction.none) {

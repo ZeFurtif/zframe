@@ -25,6 +25,7 @@ width: i32,
 height: i32,
 window_state: WindowState,
 layout: Layout,
+scroll: raylib.Vector2,
 
 pub fn init(refs: App.AppRefs) !Window {
     return .{
@@ -35,6 +36,7 @@ pub fn init(refs: App.AppRefs) !Window {
         .height = 100,
         .window_state = WindowState{},
         .layout = Layout.init(refs),
+        .scroll = raylib.Vector2{ .x = 0, .y = 0 },
     };
 }
 
@@ -51,6 +53,7 @@ pub fn args_init(refs: App.AppRefs, title: []const u8, x: i32, y: i32, width: i3
         .height = height,
         .window_state = WindowState{},
         .layout = Layout.init(refs),
+        .scroll = raylib.Vector2{ .x = 0, .y = 0 },
     };
     for (title, 0..) |byte, i| {
         to_return.title[i] = byte;
@@ -78,7 +81,7 @@ pub fn is_mouse_on_resize_area(self: *Window) bool {
 
 pub fn interact(self: *Window, refs: App.AppRefs) void {
     const cur_action = refs.gui.get_action();
-    if (cur_action == UserAction.interact) {
+    if (cur_action == UserAction.interact or cur_action == UserAction.canvas_scale) {
         if (self.is_mouse_inside()) {
             if (self.is_mouse_on_resize_area() and !self.window_state.is_moving) {
                 self.window_state.is_scaling = true;
@@ -117,14 +120,27 @@ pub fn update(self: *Window, refs: App.AppRefs) void {
     }
 }
 
+pub fn window_to_rectangle(self: *Window) raylib.Rectangle {
+    return raylib.Rectangle{ .x = @floatFromInt(self.x), .y = @floatFromInt(self.y), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) };
+}
+
+pub fn kill_button_rectangle(self: *Window) raylib.Rectangle {
+    return raylib.Rectangle{ .x = @floatFromInt(self.x + self.width - raygui.guiGetStyle(15, 12) - 20), .y = @floatFromInt(self.y + 12 - 9), .width = 18, .height = 18 };
+}
+
 pub fn render(self: *Window, refs: App.AppRefs) i32 {
-    const result = raygui.guiWindowBox(raylib.Rectangle{ .x = @floatFromInt(self.x), .y = @floatFromInt(self.y), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) }, self.title[0 .. self.title.len - 1 :0]);
+    //    const result = raygui.guiWindowBox(raylib.Rectangle{ .x = @floatFromInt(self.x), .y = @floatFromInt(self.y), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height) }, self.title[0 .. self.title.len - 1 :0]);
+
+    _ = raygui.guiScrollPanel(self.window_to_rectangle(), self.title[0 .. self.title.len - 1 :0], self.layout.layout_estimated_rectangle(refs), @constCast(&self.scroll), @constCast(&self.window_to_rectangle()));
+
+    const result = raygui.guiButton(self.kill_button_rectangle(), "x");
 
     if ((self.is_mouse_inside() and self.is_mouse_on_resize_area()) or self.window_state.is_scaling) {
         raylib.drawTriangle(raylib.Vector2{ .x = @floatFromInt(self.width + self.x - 10), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height) }, raylib.Vector2{ .x = @floatFromInt(self.width + self.x), .y = @floatFromInt(self.y + self.height - 10) }, raylib.Color.white);
     }
 
-    self.layout.render(self.x, self.y, self.width, self.height, refs);
-
+    raylib.beginScissorMode(self.x + 1, self.y + 24, self.width - 2, self.height - 28);
+    self.layout.render(self.x + @as(i32, @intFromFloat(self.scroll.x)), self.y + @as(i32, @intFromFloat(self.scroll.y)), self.width, self.height, refs);
+    raylib.endScissorMode();
     return result;
 }

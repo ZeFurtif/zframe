@@ -79,6 +79,10 @@ pub fn update(self: *WindowManager, refs: App.AppRefs) void {
         self.spawn_window("Timeline", refs, LayoutType.timeline);
         return;
     }
+    if (cur_action == UserAction.window_spawn_onionskin) {
+        self.spawn_window("Onion Skin", refs, LayoutType.onion_skin);
+        return;
+    }
 
     var i: usize = 0;
     while (i != self.windows.items.len) {
