@@ -24,6 +24,7 @@ pub const ElementType = enum {
     text,
     button,
     color_picker,
+    timeline,
 };
 
 const UIElement = @This();
@@ -80,7 +81,7 @@ pub fn base_interact(refs: App.AppRefs) void {
 }
 
 pub fn buildRec(self: *UIElement, parent_x: i32, parent_y: i32, parent_width: i32, parent_height: i32) raylib.Rectangle {
-    const navbar_height = 22;
+    const navbar_height = 24;
     switch (self.anchor) {
         Anchor.top_left => {
             return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
@@ -110,7 +111,7 @@ pub fn buildRec(self: *UIElement, parent_x: i32, parent_y: i32, parent_width: i3
             return raylib.Rectangle{ .x = @floatFromInt(parent_x - self.x + parent_width - self.width), .y = @floatFromInt(parent_y + self.y + parent_height + navbar_height), .width = @floatFromInt(self.width), .height = @floatFromInt(self.height - navbar_height) };
         },
         Anchor.fill => {
-            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(parent_width - self.width), .height = @floatFromInt(parent_height - self.height - navbar_height) };
+            return raylib.Rectangle{ .x = @floatFromInt(parent_x + self.x), .y = @floatFromInt(parent_y + self.y + navbar_height), .width = @floatFromInt(parent_width - self.width), .height = @floatFromInt(parent_height - self.height - 2 * navbar_height) };
         },
     }
 }
@@ -132,6 +133,33 @@ pub fn render(self: *UIElement, parent_x: i32, parent_y: i32, parent_width: i32,
         },
         ElementType.color_picker => {
             _ = raygui.guiColorPicker(rec, content, &refs.toolbox.current_color);
+        },
+        ElementType.timeline => {
+            const frame_size: i16 = 20;
+            const layer_height: i16 = 30;
+            const layer_name_width: i16 = 60;
+
+            for (refs.canvas.layers.items, 0..) |layer, i| {
+                const layer_title_rect = raylib.Rectangle{ .x = rec.x, .y = rec.y + @as(f32, @floatFromInt(@as(i32, @intCast(i * layer_height)))), .width = layer_name_width, .height = @as(f32, @floatFromInt(@as(i32, @intCast((i + 1) * layer_height)))) };
+                _ = raygui.guiDummyRec(layer_title_rect, "Layer");
+                for (0..refs.canvas.sequenceSettings.end) |frame| {
+                    const frame_rect = raylib.Rectangle{ .x = rec.x + layer_name_width + @as(f32, @floatFromInt(@as(i32, @intCast(frame * frame_size)))), .y = rec.y + @as(f32, @floatFromInt(@as(i32, @intCast(i * layer_height)))), .width = @floatFromInt(frame_size), .height = @floatFromInt(layer_height) };
+                    _ = raygui.guiPanel(frame_rect, undefined);
+                }
+                var cur_frame: usize = 0;
+                for (layer.frames.items) |frame| {
+                    const frame_rect = raylib.Rectangle{ .x = rec.x + layer_name_width + @as(f32, @floatFromInt(@as(i32, @intCast(cur_frame * frame_size)))), .y = rec.y + @as(f32, @floatFromInt(@as(i32, @intCast(i * layer_height)))), .width = @floatFromInt(frame_size * frame.exposure), .height = @floatFromInt(layer_height) };
+                    //_ = raygui.guiButton(frame_rect, undefined);
+                    _ = raylib.drawRectangleRec(frame_rect, raylib.Color.light_gray);
+                    _ = raylib.drawRectangleLinesEx(frame_rect, 1, raylib.Color.gray);
+                    cur_frame += frame.exposure;
+                }
+            }
+
+            raylib.beginBlendMode(raylib.BlendMode.blend_alpha);
+            raylib.drawRectangle(@as(i32, @intCast(refs.canvas.current_frame * frame_size + 60)) + @as(i32, @intFromFloat(rec.x)), @intFromFloat(rec.y), frame_size, @intFromFloat(rec.height - 50), raylib.colorAlpha(raylib.Color.blue, 0.2));
+            raylib.drawRectangle(@as(i32, @intCast(refs.canvas.current_frame * frame_size + 60)) + @as(i32, @intFromFloat(rec.x)), @as(i32, @intCast(refs.canvas.selected_layer_id * layer_height)) + @as(i32, @intFromFloat(rec.y)), frame_size, layer_height, raylib.colorAlpha(raylib.Color.blue, 0.25));
+            raylib.endBlendMode();
         },
     }
 }

@@ -22,6 +22,7 @@ pub const UserAction = enum {
     window_spawn_history,
     window_spawn_timeline,
     window_spawn_colorpicker,
+    window_spawn_onionskin,
 };
 
 const Gui = @This();
@@ -80,6 +81,10 @@ pub fn update_action(self: *Gui) void {
         }
         if (raylib.isKeyPressed(raylib.KeyboardKey.key_s)) {
             self.current_user_action = UserAction.canvas_save;
+            return;
+        }
+        if (raylib.isKeyPressed(raylib.KeyboardKey.key_o)) {
+            self.current_user_action = UserAction.window_spawn_onionskin;
             return;
         }
     }

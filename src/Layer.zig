@@ -36,7 +36,7 @@ pub fn get_current_frame_index(self: *Layer, pos: usize) ?usize {
     var cur_pos: usize = 0;
     while (i < self.frames.items.len) {
         cur_pos += self.frames.items[i].exposure;
-        if (cur_pos >= pos) {
+        if (cur_pos > pos) {
             return i;
         }
         i += 1;
