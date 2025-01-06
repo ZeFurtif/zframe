@@ -3,6 +3,7 @@ const math = std.math;
 const Allocator = std.mem.Allocator;
 
 const raylib = @import("raylib");
+const raymath = @import("raymath");
 
 const App = @import("App.zig");
 const Layer = @import("Layer.zig");
@@ -19,8 +20,7 @@ pub const CanvasState = struct {
     mouse_offset_y: i32 = 0,
     saved_camera_x: f32 = 0,
     saved_camera_y: f32 = 0,
-    draw_x: f32 = 0,
-    draw_y: f32 = 0,
+    draw_pos: raylib.Vector2 = .{ .x = 0, .y = 0 },
 };
 
 pub const SequenceSettings = struct {
@@ -211,14 +211,14 @@ pub fn interact(self: *Canvas, refs: App.AppRefs) void {
     }
     if (cur_action == UserAction.interact and self.is_mouse_inside(world_mouse_pos) and self.layers.items.len > 0) {
         const frame_id = refs.canvas.layers.items[refs.canvas.selected_layer_id].get_current_frame_index(refs.canvas.current_frame) orelse return;
-        self.canvas_state.draw_x = @divTrunc((self.canvas_state.draw_x * 3 + world_mouse_pos.x), 4);
-        self.canvas_state.draw_y = @divTrunc((self.canvas_state.draw_y * 3 + world_mouse_pos.y), 4);
-        self.layers.items[self.selected_layer_id].frames.items[frame_id].draw(@intFromFloat(self.canvas_state.draw_x), @intFromFloat(self.canvas_state.draw_y), refs);
+        while (raymath.vector2Distance(self.canvas_state.draw_pos, world_mouse_pos) > refs.toolbox.current_brush_size / 2 and refs.toolbox.current_brush_size != 0) {
+            self.canvas_state.draw_pos = raymath.vector2MoveTowards(self.canvas_state.draw_pos, world_mouse_pos, refs.toolbox.current_brush_size);
+            self.layers.items[self.selected_layer_id].frames.items[frame_id].draw(self.canvas_state.draw_pos, refs);
+        }
         return;
     }
     if (cur_action == UserAction.none) {
-        self.canvas_state.draw_x = world_mouse_pos.x;
-        self.canvas_state.draw_y = world_mouse_pos.y;
+        self.canvas_state.draw_pos = world_mouse_pos;
     }
     self.canvas_state.is_dragged = false;
     raylib.setMouseCursor(0);

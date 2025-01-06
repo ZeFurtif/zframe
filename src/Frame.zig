@@ -19,9 +19,9 @@ pub fn new_target(self: *Frame, width: i32, height: i32) void {
     self.target = raylib.loadRenderTexture(width, height);
 }
 
-pub fn draw(self: *Frame, pos_x: i32, pos_y: i32, refs: App.AppRefs) void {
+pub fn draw(self: *Frame, position: raylib.Vector2, refs: App.AppRefs) void {
     raylib.beginTextureMode(self.target);
-    raylib.drawCircle(pos_x, pos_y, 5, refs.toolbox.current_color);
+    raylib.drawCircle(@intFromFloat(position.x), @intFromFloat(position.y), refs.toolbox.current_brush_size, refs.toolbox.current_color);
     raylib.endTextureMode();
 }
 
